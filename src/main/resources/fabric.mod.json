@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "simplebackup",
+  "version": "${version}",
+  "name": "simplebackup",
+  "description": "Simple world backup utility",
+  "authors": [
+    "spoorn"
+  ],
+  "contact": {},
+  "license": "LGPL-3.0",
+  "icon": "assets/simplebackup/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "org.spoorn.simplebackup.client.SimpleBackupClient"
+    ],
+    "main": [
+      "org.spoorn.simplebackup.SimpleBackup"
+    ]
+  },
+  "mixins": [
+    "simplebackup.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": "*",
+    "fabric": "*",
+    "minecraft": ">=1.18"
+  }
+}

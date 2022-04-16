@@ -16,6 +16,11 @@ repositories {
     // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html
     // for more information about repositories.
+
+    // OmegaConfig
+    maven {
+        url "https://jitpack.io"
+    }
 }
 
 dependencies {
@@ -26,6 +31,10 @@ dependencies {
 
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    // Omega Config
+    include("com.github.Draylar.omega-config:omega-config-base:${project.omega_config_version}")
+    modImplementation("com.github.Draylar.omega-config:omega-config-base:${project.omega_config_version}")
 }
 
 processResources {

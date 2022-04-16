@@ -4,15 +4,11 @@ import lombok.extern.log4j.Log4j2;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.WorldSavePath;
 import org.spoorn.simplebackup.mixin.MinecraftServerAccessor;
 import org.spoorn.simplebackup.util.SimpleBackupUtil;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ExecutorService;
@@ -21,6 +17,7 @@ import java.util.concurrent.Executors;
 @Log4j2
 public class SimpleBackup implements ModInitializer {
     
+    public static final String MODID = "simplebackup";
     private static final String BACKUPS_FOLDER = "backup";
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
     private static final ExecutorService EXECUTOR_SERVICE = Executors.newSingleThreadScheduledExecutor();

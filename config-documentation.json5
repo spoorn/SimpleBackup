@@ -10,5 +10,14 @@
   "enableServerStoppedBackup": true,
   //Backup format.  Supports simply backing up as a direct copy of the folder, or ZIP [default = "ZIP"]
   //Supported formats: "DIRECTORY", "ZIP"
-  "backupFormat": "ZIP"
+  "backupFormat": "ZIP",
+  //Broadcast messages when server is backing up and success/failed.  These are in the config file to allow
+  //servers to use whatever language they want without updating the mod source directly.  If you remove these,
+  //it will default to english.
+  "broadcastMessages": {
+    "simplebackup.backup.failed.broadcast2": ".  Please check the server logs for errors!",
+    "simplebackup.backup.broadcast1": "Starting server backup...",
+    "simplebackup.backup.failed.broadcast1": "Server failed to backup to ",
+    "simplebackup.backup.success.broadcast": "Server was successfully backed up to "
+  }
 }

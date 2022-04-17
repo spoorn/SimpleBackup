@@ -37,14 +37,29 @@ public class SimpleBackup implements ModInitializer {
         log.info("Worlds backup folder: {}", backupsPath);
 
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
-            MinecraftServerAccessor accessor = (MinecraftServerAccessor) server;
-            String worldFolderName = accessor.getSession().getDirectoryName();
-            Path worldSavePath = accessor.getSession().getDirectory(WorldSavePath.ROOT).getParent();
-            
-            SimpleBackupTask simpleBackupTask = new SimpleBackupTask(root, worldFolderName, worldSavePath);
-            int backupIntervals = ModConfig.get().backupIntervalInSeconds;
-            log.info("Scheduling a backup every {} seconds...", backupIntervals);
-            ScheduledFuture<?> future = EXECUTOR_SERVICE.scheduleAtFixedRate(simpleBackupTask, backupIntervals, backupIntervals, TimeUnit.SECONDS);
+            if (ModConfig.get().enableAutomaticBackups) {
+                log.info("Automatic backups are enabled");
+                MinecraftServerAccessor accessor = (MinecraftServerAccessor) server;
+                String worldFolderName = accessor.getSession().getDirectoryName();
+                Path worldSavePath = accessor.getSession().getDirectory(WorldSavePath.ROOT).getParent();
+
+                SimpleBackupTask simpleBackupTask = new SimpleBackupTask(root, worldFolderName, worldSavePath, server);
+                int backupIntervals = ModConfig.get().backupIntervalInSeconds;
+                log.info("Scheduling a backup every {} seconds...", backupIntervals);
+                ScheduledFuture<?> future = EXECUTOR_SERVICE.scheduleAtFixedRate(simpleBackupTask, backupIntervals, backupIntervals, TimeUnit.SECONDS);
+            }
+        });
+        
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+            if (ModConfig.get().enableServerStoppedBackup) {
+                log.info("Server has stopped - creating a backup");
+                MinecraftServerAccessor accessor = (MinecraftServerAccessor) server;
+                String worldFolderName = accessor.getSession().getDirectoryName();
+                Path worldSavePath = accessor.getSession().getDirectory(WorldSavePath.ROOT).getParent();
+
+                SimpleBackupTask simpleBackupTask = new SimpleBackupTask(root, worldFolderName, worldSavePath, server);
+                simpleBackupTask.run();
+            }
         });
     }
 }

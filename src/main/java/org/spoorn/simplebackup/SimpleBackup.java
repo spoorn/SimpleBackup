@@ -43,7 +43,7 @@ public class SimpleBackup implements ModInitializer {
                 Path worldSavePath = accessor.getSession().getDirectory(WorldSavePath.ROOT).getParent();
 
                 int backupIntervals = ModConfig.get().backupIntervalInSeconds;
-                log.info("Scheduling a backup every {} seconds...", backupIntervals);
+                log.info("Scheduling a backup every {} seconds...", Math.max(60, backupIntervals));
                 simpleBackupTask.set(SimpleBackupTask.builder(root, worldFolderName, worldSavePath, server)
                         .backupIntervalInSeconds(backupIntervals)
                         .build());

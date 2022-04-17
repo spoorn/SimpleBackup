@@ -53,20 +53,16 @@ public class SimpleBackupTask implements Runnable {
 
     @Override
     public void run() {
+        PlayerManager playerManager = this.server.getPlayerManager();
+
         // wait at start
         if (!terminated && this.backupIntervalInMillis > 1000) {
-            try {
-                Thread.sleep(this.backupIntervalInMillis);
-            } catch (InterruptedException e) {
-                log.error("Initial SimpleBackupTask sleep interrupted!  Continuing...", e);
-            }
+            waitToContinue(playerManager);
         }
         
         // Automatic backup loops
         while (!terminated) {
             String timeStr = dtf.format(LocalDateTime.now());
-
-            PlayerManager playerManager = this.server.getPlayerManager();
             playerManager.broadcast(BROADCAST1, MessageType.SYSTEM, Util.NIL_UUID);
 
             boolean copied = SimpleBackupUtil.backup(this.worldSavePath, this.worldFolderName, this.root, timeStr);
@@ -82,29 +78,33 @@ public class SimpleBackupTask implements Runnable {
             }
             
             if (this.backupIntervalInMillis > 1000) {
-                // Automatic periodic backups
-                try {
-                    // Technically there is an extremely small window where all server players can log out between the
-                    // backup and this check, so we'll never backup that window.  But it's small enough to not worry about practically
-                    // The below logic to wait on the lock will simply wait if we just backed up, but there are no players
-                    // online, or the single player game is paused.  This does mean the next backup's changed content
-                    // might span a duration less than the backup intervals, but this is intended as I think it's better
-                    // than trying to make sure each backup has an exact "online running" difference from the previous.
-                    if (ModConfig.get().onlyBackupIfPlayersOnline && playerManager.getCurrentPlayerCount() == 0) {
-                        // Wait until a player logs on
-                        synchronized (this.lock) {
-                            this.lock.wait();
-                        }
-                    }
-                    
-                    Thread.sleep(this.backupIntervalInMillis);
-                } catch (InterruptedException e) {
-                    log.error("SimpleBackupTask thread interrupted", e);
-                }
+                waitToContinue(playerManager);
             } else {
                 // Single run
                 break;
             }
+        }
+    }
+    
+    private void waitToContinue(PlayerManager playerManager) {
+        // Automatic periodic backups
+        try {
+            // Technically there is an extremely small window where all server players can log out between the
+            // backup and this check, so we'll never backup that window.  But it's small enough to not worry about practically
+            // The below logic to wait on the lock will simply wait if we just backed up, but there are no players
+            // online, or the single player game is paused.  This does mean the next backup's changed content
+            // might span a duration less than the backup intervals, but this is intended as I think it's better
+            // than trying to make sure each backup has an exact "online running" difference from the previous.
+            if (ModConfig.get().onlyBackupIfPlayersOnline && playerManager.getCurrentPlayerCount() == 0) {
+                // Wait until a player logs on
+                synchronized (this.lock) {
+                    this.lock.wait();
+                }
+            }
+
+            Thread.sleep(this.backupIntervalInMillis);
+        } catch (InterruptedException e) {
+            log.error("SimpleBackupTask thread interrupted", e);
         }
     }
 

@@ -4,7 +4,10 @@ import lombok.extern.log4j.Log4j2;
 import net.minecraft.network.MessageType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
-import net.minecraft.text.*;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Util;
 import org.spoorn.simplebackup.config.ModConfig;
 import org.spoorn.simplebackup.util.SimpleBackupUtil;
@@ -17,10 +20,10 @@ import java.time.format.DateTimeFormatter;
 public class SimpleBackupTask implements Runnable {
     
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
-    private static final MutableText BROADCAST1 = new TranslatableText("simplebackup.backup.broadcast1").setStyle(Style.EMPTY.withColor(13543679));
-    private static final MutableText SUCCESS_BROADCAST = new TranslatableText("simplebackup.backup.success.broadcast");
-    private static final MutableText FAILED_BROADCAST1 = new TranslatableText("simplebackup.backup.failed.broadcast1");
-    private static final MutableText FAILED_BROADCAST2 = new TranslatableText("simplebackup.backup.failed.broadcast2");
+    private static final Text BROADCAST1 = Text.of(new TranslatableText("simplebackup.backup.broadcast1").setStyle(Style.EMPTY.withColor(13543679)).getString());
+    private static final Text SUCCESS_BROADCAST = Text.of(new TranslatableText("simplebackup.backup.success.broadcast").getString());
+    private static final Text FAILED_BROADCAST1 = Text.of(new TranslatableText("simplebackup.backup.failed.broadcast1").getString());
+    private static final Text FAILED_BROADCAST2 = Text.of(new TranslatableText("simplebackup.backup.failed.broadcast2").getString());
 
     public final Object lock = new Object();
     private final Path root;

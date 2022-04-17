@@ -30,6 +30,14 @@ public class ModConfig implements Config {
             "Supported formats: \"DIRECTORY\", \"ZIP\"")
     public String backupFormat = "ZIP";
     
+    @Comment("Percentage of disk space available required before creating a backup.  [default = 20]\n" +
+            "This will prevent generating backups if your disk space is getting close to maxing out.")
+    public int percentageAvailableDiskSpaceRequirement = 20;
+    
+    @Comment("Maximum number of backups to keep at a given time.  [default = 10]\n" +
+            "If we are about to generate a backup past this number, the oldest backup will be deleted.")
+    public int maxBackupsToKeep = 10;
+    
     @Comment("Broadcast messages when server is backing up and success/failed.  These are in the config file to allow\n" +
             "servers to use whatever language they want without updating the mod source directly.  If you remove these,\n" +
             "it will default to english.")

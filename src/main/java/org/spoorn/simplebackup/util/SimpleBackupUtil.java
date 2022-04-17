@@ -5,6 +5,7 @@ import org.spoorn.simplebackup.SimpleBackup;
 import org.spoorn.simplebackup.ZipCompressor;
 import org.spoorn.simplebackup.config.ModConfig;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -28,7 +29,12 @@ public class SimpleBackupUtil {
     }
     
     public static boolean backup(Path source, String worldFolderName, Path gameDir, String timeStr) {
-        if (ZIP_FORMAT.equals(ModConfig.get().backupFormat)) {
+        if (!checkAvailableSpace(gameDir)) {
+            return false;
+        }
+        
+        String backupFormat = ModConfig.get().backupFormat;
+        if (ZIP_FORMAT.equals(backupFormat)) {
             Path destination = gameDir.resolve(Path.of(SimpleBackup.BACKUPS_FOLDER, timeStr));
             String destinationFile = destination + ZipCompressor.ZIP_EXTENSION;
             log.info("Backing up world [{}] to {}", source, destinationFile);
@@ -36,7 +42,7 @@ public class SimpleBackupUtil {
                 log.error("Backup at {} already exists!  Skipping...", destinationFile);
             }
             return ZipCompressor.zip(source.toString(), destination.toString());
-        } else if (DIRECTORY_FORMAT.equals(ModConfig.get().backupFormat)) {
+        } else if (DIRECTORY_FORMAT.equals(backupFormat)) {
             Path destination = gameDir.resolve(Path.of(SimpleBackup.BACKUPS_FOLDER, timeStr, worldFolderName));
             log.info("Backing up world [{}] to {}", source, destination);
             if (Files.exists(destination)) {
@@ -45,8 +51,20 @@ public class SimpleBackupUtil {
             createDirectoryFailSafe(destination);
             return copyDirectoriesFailSafe(source, destination);
         } else {
-            throw new UnsupportedOperationException("SimpleBackup config 'backupFormat' is not supported!");
+            log.error("SimpleBackup config 'backupFormat'={} is not supported!", backupFormat);
+            return false;
         }
+    }
+    
+    private static boolean checkAvailableSpace(Path gameDir) {
+        File file = new File(gameDir.toAbsolutePath().toString());
+        double availableDiskSpace = ((double) file.getUsableSpace()) / file.getTotalSpace() * 100;
+        if (availableDiskSpace < ModConfig.get().percentageAvailableDiskSpaceRequirement) {
+            log.error(String.format("Not enough available disk space to create backup! Disk space available: %.2f%%.  " +
+                    "Config's percentageAvailableDiskSpaceRequirement: %d", availableDiskSpace, ModConfig.get().percentageAvailableDiskSpaceRequirement));
+            return false;
+        }
+        return true;
     }
     
     private static boolean copyDirectoriesFailSafe(Path source, Path destination) {

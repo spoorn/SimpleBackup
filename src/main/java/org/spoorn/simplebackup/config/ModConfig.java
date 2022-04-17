@@ -12,7 +12,7 @@ public class ModConfig implements Config {
     @Comment("True to enable automatic backups in intervals.  False to disable [default = true]")
     public boolean enableAutomaticBackups = true;
     
-    @Comment("Delay in seconds between automatic backups [default = 3600]")
+    @Comment("Delay in seconds between automatic backups. [default = 3600] [minimum = 60]")
     public int backupIntervalInSeconds = 3600;
     
     @Comment("True to trigger a backup when server is stopped.  False to disable [default = true]")

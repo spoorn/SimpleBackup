@@ -20,7 +20,6 @@ public class SimpleBackup implements ModInitializer {
     
     public static final String MODID = "simplebackup";
     public static final String BACKUPS_FOLDER = "backup";
-    private static final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newSingleThreadScheduledExecutor();
     
     @Override
     public void onInitialize() {
@@ -43,10 +42,13 @@ public class SimpleBackup implements ModInitializer {
                 String worldFolderName = accessor.getSession().getDirectoryName();
                 Path worldSavePath = accessor.getSession().getDirectory(WorldSavePath.ROOT).getParent();
 
-                SimpleBackupTask simpleBackupTask = new SimpleBackupTask(root, worldFolderName, worldSavePath, server);
                 int backupIntervals = ModConfig.get().backupIntervalInSeconds;
                 log.info("Scheduling a backup every {} seconds...", backupIntervals);
-                ScheduledFuture<?> future = EXECUTOR_SERVICE.scheduleAtFixedRate(simpleBackupTask, backupIntervals, backupIntervals, TimeUnit.SECONDS);
+                SimpleBackupTask simpleBackupTask = SimpleBackupTask.builder(root, worldFolderName, worldSavePath, server)
+                        .backupIntervalInSeconds(backupIntervals)
+                        .build();
+                Thread backupThread = new Thread(simpleBackupTask);
+                backupThread.start();
             }
         });
         
@@ -57,7 +59,8 @@ public class SimpleBackup implements ModInitializer {
                 String worldFolderName = accessor.getSession().getDirectoryName();
                 Path worldSavePath = accessor.getSession().getDirectory(WorldSavePath.ROOT).getParent();
 
-                SimpleBackupTask simpleBackupTask = new SimpleBackupTask(root, worldFolderName, worldSavePath, server);
+                SimpleBackupTask simpleBackupTask = SimpleBackupTask.builder(root, worldFolderName, worldSavePath, server)
+                                .build();
                 simpleBackupTask.run();
             }
         });

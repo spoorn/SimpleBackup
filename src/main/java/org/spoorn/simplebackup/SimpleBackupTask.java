@@ -87,7 +87,8 @@ public class SimpleBackupTask implements Runnable {
                 broadcastBackupPath = timeStr + "/" + this.worldFolderName;
                 this.lastBackupProcessed = this.root.resolve(Path.of(SimpleBackup.BACKUPS_FOLDER, timeStr));
             }
-            boolean copied = SimpleBackupUtil.backup(this.worldSavePath, this.worldFolderName, this.root, timeStr);
+            boolean copied = SimpleBackupUtil.backup(this.worldSavePath, this.worldFolderName, this.root, timeStr)
+                    && SimpleBackupUtil.deleteStaleBackupFiles(this.root);
             Text relFolderPath = new LiteralText(broadcastBackupPath);
             if (copied) {
                 log.info("Successfully backed up world [{}] to [{}]", this.worldFolderName, broadcastBackupPath);

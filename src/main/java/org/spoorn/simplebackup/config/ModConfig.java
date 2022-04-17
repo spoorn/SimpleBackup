@@ -35,7 +35,7 @@ public class ModConfig implements Config {
     public int percentageAvailableDiskSpaceRequirement = 20;
     
     @Comment("Maximum number of backups to keep at a given time.  [default = 10]\n" +
-            "If we are about to generate a backup past this number, the oldest backup will be deleted.")
+            "If we generate a backup, but have more backups than this number, the oldest backup will be deleted.")
     public int maxBackupsToKeep = 10;
     
     @Comment("Broadcast messages when server is backing up and success/failed.  These are in the config file to allow\n" +

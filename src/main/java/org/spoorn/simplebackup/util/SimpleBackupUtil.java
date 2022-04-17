@@ -9,7 +9,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Log4j2
 public class SimpleBackupUtil {
@@ -57,7 +60,7 @@ public class SimpleBackupUtil {
     }
     
     private static boolean checkAvailableSpace(Path source, Path gameDir) {
-        File partition = new File(gameDir.toAbsolutePath().toString());
+        File partition = gameDir.toFile();
         double availableDiskSpace = ((double) partition.getUsableSpace()) / partition.getTotalSpace() * 100;
         if (availableDiskSpace < ModConfig.get().percentageAvailableDiskSpaceRequirement) {
             log.error(String.format("Not enough available disk space to create backup! Disk space available: %.2f%%.  " +
@@ -65,13 +68,49 @@ public class SimpleBackupUtil {
             return false;
         }
         
-        File sourceFile = new File(source.toAbsolutePath().toString());
+        File sourceFile = source.toFile();
         // Make sure we have enough space for the backup itself.  Adds a buffer of 5% as ZIP files could be larger in size
         if (sourceFile.length() > (partition.getTotalSpace() - partition.getUsableSpace()) * 1.05) {
             log.error(String.format("Backup size may exceed the available disk space!  Please clear out your disk space before generating\n" +
                     "another backup.  Disk space available: %.2f%%.  You need at least %d bytes free before we can make more backups.", 
                     availableDiskSpace, sourceFile.length()));
             return false;
+        }
+        return true;
+    }
+    
+    public static boolean deleteStaleBackupFiles(Path gameDir) {
+        File[] backupFiles = gameDir.resolve(SimpleBackup.BACKUPS_FOLDER).toFile().listFiles();
+        if (backupFiles != null) {
+            int numBackupFiles = backupFiles.length;
+            AtomicBoolean errorWhileSorting = new AtomicBoolean(false);
+            int maxBackupsTokeep = ModConfig.get().maxBackupsToKeep;
+            if (numBackupFiles >= maxBackupsTokeep) {
+                Arrays.sort(backupFiles, Comparator.comparingLong(file -> {
+                    try {
+                        return Files.readAttributes(file.toPath(), BasicFileAttributes.class).creationTime().toMillis();
+                    } catch (IOException e) {
+                        log.error("Error while sorting backup files by creationTime", e);
+                        errorWhileSorting.set(true);
+                        return 0;
+                    }
+                }));
+
+                if (errorWhileSorting.get()) {
+                    return false;
+                }
+            }
+            while (numBackupFiles > maxBackupsTokeep) {
+                try {
+                    Path fileToDelete = backupFiles[backupFiles.length - numBackupFiles].toPath();
+                    log.info("Deleting backup at [{}] as we have more backups than maxBackupsToKeep=", fileToDelete, maxBackupsTokeep);
+                    Files.deleteIfExists(fileToDelete);
+                    numBackupFiles--;
+                } catch (Exception e) {
+                    log.error("Could not check if number of backup files exceeds the maxBackupsToKeep", e);
+                    return false;
+                }
+            }
         }
         return true;
     }

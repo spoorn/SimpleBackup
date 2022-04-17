@@ -25,6 +25,9 @@ public class SimpleBackup implements ModInitializer {
         
         // Config
         ModConfig.init();
+        
+        // Lang for backup broadcast messages
+        SimpleBackupTask.init();
 
         Path root = FabricLoader.getInstance().getGameDir();
 

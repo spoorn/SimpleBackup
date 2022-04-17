@@ -1,6 +1,0 @@
-{
-  "simplebackup.backup.broadcast1": "Starting server backup...",
-  "simplebackup.backup.success.broadcast": "Server was successfully backed up to ",
-  "simplebackup.backup.failed.broadcast1": "Server failed to backup to ",
-  "simplebackup.backup.failed.broadcast2": ".  Please check the server logs for errors!"
-}

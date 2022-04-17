@@ -6,6 +6,9 @@ import draylar.omegaconfig.api.Config;
 import org.spoorn.simplebackup.SimpleBackup;
 import org.spoorn.simplebackup.util.SimpleBackupUtil;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ModConfig implements Config {
 
     private static ModConfig CONFIG;
@@ -26,6 +29,16 @@ public class ModConfig implements Config {
     @Comment("Backup format.  Supports simply backing up as a direct copy of the folder, or ZIP [default = \"ZIP\"]\n" +
             "Supported formats: \"DIRECTORY\", \"ZIP\"")
     public String backupFormat = "ZIP";
+    
+    @Comment("Broadcast messages when server is backing up and success/failed.  These are in the config file to allow\n" +
+            "servers to use whatever language they want without updating the mod source directly.  If you remove these,\n" +
+            "it will default to english.")
+    public Map<String, String> broadcastMessages = new HashMap<>(Map.of(
+            "simplebackup.backup.broadcast", "Starting server backup...",
+            "simplebackup.backup.success.broadcast", "Server was successfully backed up to ",
+            "simplebackup.backup.failed.broadcast1", "Server failed to backup to ",
+            "simplebackup.backup.failed.broadcast2", ".  Please check the server logs for errors!"
+    ));
 
     public static void init() {
         CONFIG = OmegaConfig.register(ModConfig.class);

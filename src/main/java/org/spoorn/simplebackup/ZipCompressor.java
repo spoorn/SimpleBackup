@@ -15,9 +15,7 @@ public class ZipCompressor {
     
     public static boolean zip(String targetPath, String destinationPath) {
         try {
-            ExcludeFileFilter excludeFileFilter = file -> {
-                return SimpleBackupUtil.FILES_TO_SKIP_COPY.contains(file.getName());
-            };
+            ExcludeFileFilter excludeFileFilter = file -> SimpleBackupUtil.FILES_TO_SKIP_COPY.contains(file.getName());
             ZipParameters parameters = new ZipParameters();
             parameters.setExcludeFileFilter(excludeFileFilter);
 

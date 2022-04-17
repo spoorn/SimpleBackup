@@ -7,7 +7,6 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.Language;
 import net.minecraft.util.Util;
 import org.spoorn.simplebackup.config.ModConfig;
 import org.spoorn.simplebackup.util.SimpleBackupUtil;
@@ -15,15 +14,16 @@ import org.spoorn.simplebackup.util.SimpleBackupUtil;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 @Log4j2
 public class SimpleBackupTask implements Runnable {
     
     private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
-    private static final Text BROADCAST1 = new LiteralText(Language.getInstance().get("simplebackup.backup.broadcast1")).setStyle(Style.EMPTY.withColor(13543679));
-    private static final Text SUCCESS_BROADCAST = new LiteralText(Language.getInstance().get("simplebackup.backup.success.broadcast"));
-    private static final Text FAILED_BROADCAST1 = new LiteralText(Language.getInstance().get("simplebackup.backup.failed.broadcast1"));
-    private static final Text FAILED_BROADCAST2 = new LiteralText(Language.getInstance().get("simplebackup.backup.failed.broadcast2"));
+    private static Text BROADCAST1;
+    private static Text SUCCESS_BROADCAST;
+    private static Text FAILED_BROADCAST1;
+    private static Text FAILED_BROADCAST2;
 
     public final Object lock = new Object();
     public boolean isProcessing = false;
@@ -42,6 +42,14 @@ public class SimpleBackupTask implements Runnable {
         this.worldSavePath = worldSavePath;
         this.server = server;
         this.backupIntervalInMillis = backupIntervalInSeconds * 1000L;
+    }
+    
+    public static void init() {
+        Map<String, String> broadcastMessages = ModConfig.get().broadcastMessages;
+        BROADCAST1 = new LiteralText(broadcastMessages.getOrDefault("simplebackup.backup.broadcast", "Starting server backup...")).setStyle(Style.EMPTY.withColor(13543679));
+        SUCCESS_BROADCAST = new LiteralText(broadcastMessages.getOrDefault("simplebackup.backup.success.broadcast", "Server was successfully backed up to "));
+        FAILED_BROADCAST1 = new LiteralText(broadcastMessages.getOrDefault("simplebackup.backup.failed.broadcast1", "Server failed to backup to "));
+        FAILED_BROADCAST2 = new LiteralText(broadcastMessages.getOrDefault("simplebackup.backup.failed.broadcast2", ".  Please check the server logs for errors!"));
     }
 
     public static SimpleBackupTaskBuilder builder(final Path root, final String worldFolderName, final Path worldSavePath, 
@@ -155,7 +163,7 @@ public class SimpleBackupTask implements Runnable {
         }
 
         public SimpleBackupTaskBuilder backupIntervalInSeconds(int backupIntervalInSeconds) {
-            this.backupIntervalInSeconds = Math.max(60, backupIntervalInSeconds);
+            this.backupIntervalInSeconds = Math.max(10, backupIntervalInSeconds);
             return this;
         }
 

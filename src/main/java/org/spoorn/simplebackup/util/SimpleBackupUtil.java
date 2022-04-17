@@ -29,7 +29,7 @@ public class SimpleBackupUtil {
     }
     
     public static boolean backup(Path source, String worldFolderName, Path gameDir, String timeStr) {
-        if (!checkAvailableSpace(gameDir)) {
+        if (!checkAvailableSpace(source, gameDir)) {
             return false;
         }
         
@@ -56,12 +56,21 @@ public class SimpleBackupUtil {
         }
     }
     
-    private static boolean checkAvailableSpace(Path gameDir) {
-        File file = new File(gameDir.toAbsolutePath().toString());
-        double availableDiskSpace = ((double) file.getUsableSpace()) / file.getTotalSpace() * 100;
+    private static boolean checkAvailableSpace(Path source, Path gameDir) {
+        File partition = new File(gameDir.toAbsolutePath().toString());
+        double availableDiskSpace = ((double) partition.getUsableSpace()) / partition.getTotalSpace() * 100;
         if (availableDiskSpace < ModConfig.get().percentageAvailableDiskSpaceRequirement) {
             log.error(String.format("Not enough available disk space to create backup! Disk space available: %.2f%%.  " +
                     "Config's percentageAvailableDiskSpaceRequirement: %d", availableDiskSpace, ModConfig.get().percentageAvailableDiskSpaceRequirement));
+            return false;
+        }
+        
+        File sourceFile = new File(source.toAbsolutePath().toString());
+        // Make sure we have enough space for the backup itself.  Adds a buffer of 5% as ZIP files could be larger in size
+        if (sourceFile.length() > (partition.getTotalSpace() - partition.getUsableSpace()) * 1.05) {
+            log.error(String.format("Backup size may exceed the available disk space!  Please clear out your disk space before generating\n" +
+                    "another backup.  Disk space available: %.2f%%.  You need at least %d bytes free before we can make more backups.", 
+                    availableDiskSpace, sourceFile.length()));
             return false;
         }
         return true;

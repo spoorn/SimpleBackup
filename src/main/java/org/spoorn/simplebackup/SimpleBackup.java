@@ -33,7 +33,7 @@ public class SimpleBackup implements ModInitializer {
         SimpleBackupUtil.createDirectoryFailSafe(backupsPath);
         log.info("Worlds backup folder: {}", backupsPath);
 
-        boolean enableAutomaticBackups = ModConfig.get().enableAutomaticBackups;
+        final boolean enableAutomaticBackups = ModConfig.get().enableAutomaticBackups;
         AtomicReference<SimpleBackupTask> simpleBackupTask = new AtomicReference<>();
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             if (enableAutomaticBackups) {

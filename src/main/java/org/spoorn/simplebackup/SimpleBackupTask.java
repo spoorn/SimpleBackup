@@ -54,6 +54,16 @@ public class SimpleBackupTask implements Runnable {
 
     @Override
     public void run() {
+        // wait at start
+        if (!terminated && this.backupIntervalInMillis > 1000) {
+            try {
+                Thread.sleep(this.backupIntervalInMillis);
+            } catch (InterruptedException e) {
+                log.error("Initial SimpleBackupTask sleep interrupted!  Continuing...", e);
+            }
+        }
+        
+        // Automatic backup loops
         while (!terminated) {
             String timeStr = dtf.format(LocalDateTime.now());
             Path worldBackupPath = this.root.resolve(Path.of(SimpleBackup.BACKUPS_FOLDER, timeStr, this.worldFolderName));
@@ -135,7 +145,7 @@ public class SimpleBackupTask implements Runnable {
         }
 
         public SimpleBackupTaskBuilder backupIntervalInSeconds(int backupIntervalInSeconds) {
-            this.backupIntervalInSeconds = Math.max(10, backupIntervalInSeconds);
+            this.backupIntervalInSeconds = Math.max(60, backupIntervalInSeconds);
             return this;
         }
 

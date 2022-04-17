@@ -26,6 +26,8 @@ public class SimpleBackupTask implements Runnable {
     private static final Text FAILED_BROADCAST2 = new LiteralText(Language.getInstance().get("simplebackup.backup.failed.broadcast2"));
 
     public final Object lock = new Object();
+    public boolean isProcessing = false;
+    public Path lastBackupProcessed;
     private final Path root;
     private final String worldFolderName;
     private final Path worldSavePath;
@@ -65,12 +67,19 @@ public class SimpleBackupTask implements Runnable {
         
         // Automatic backup loops
         while (!terminated) {
+            this.isProcessing = true;
             String timeStr = dtf.format(LocalDateTime.now());
             playerManager.broadcast(BROADCAST1, MessageType.SYSTEM, Util.NIL_UUID);
 
+            String broadcastBackupPath;
+            if (SimpleBackupUtil.ZIP_FORMAT.equals(ModConfig.get().backupFormat)) {
+                broadcastBackupPath = timeStr + ".zip";
+                this.lastBackupProcessed = this.root.resolve(Path.of(SimpleBackup.BACKUPS_FOLDER, broadcastBackupPath));
+            } else {
+                broadcastBackupPath = timeStr + "/" + this.worldFolderName;
+                this.lastBackupProcessed = this.root.resolve(Path.of(SimpleBackup.BACKUPS_FOLDER, timeStr));
+            }
             boolean copied = SimpleBackupUtil.backup(this.worldSavePath, this.worldFolderName, this.root, timeStr);
-            String broadcastBackupPath = SimpleBackupUtil.ZIP_FORMAT.equals(ModConfig.get().backupFormat) ?
-                    timeStr + ".zip" : timeStr + "/" + this.worldFolderName;
             Text relFolderPath = new LiteralText(broadcastBackupPath);
             if (copied) {
                 log.info("Successfully backed up world [{}] to [{}]", this.worldFolderName, broadcastBackupPath);
@@ -80,6 +89,7 @@ public class SimpleBackupTask implements Runnable {
                 playerManager.broadcast(FAILED_BROADCAST1.copy().append(relFolderPath).append(FAILED_BROADCAST2).setStyle(Style.EMPTY.withColor(16754871)), MessageType.SYSTEM, Util.NIL_UUID);
             }
             
+            this.isProcessing = false;
             if (this.backupIntervalInMillis > 1000) {
                 waitToContinue(playerManager);
             } else {

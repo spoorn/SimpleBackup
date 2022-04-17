@@ -51,6 +51,15 @@ public class SimpleBackup implements ModInitializer {
                 backupThread.start();
             }
         });
+        
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            SimpleBackupTask autoBackup;
+            if ((autoBackup = simpleBackupTask.get()) != null) {
+                if (autoBackup.isProcessing && autoBackup.lastBackupProcessed != null) {
+                    SimpleBackupUtil.cleanupFailedBackup(autoBackup.lastBackupProcessed);
+                }
+            }
+        }));
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             SimpleBackupTask autoBackup;
@@ -76,6 +85,12 @@ public class SimpleBackup implements ModInitializer {
                 SimpleBackupTask serverStopBackup = SimpleBackupTask.builder(root, worldFolderName, worldSavePath, server)
                                 .build();
                 serverStopBackup.run();
+
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                    if (serverStopBackup.isProcessing && serverStopBackup.lastBackupProcessed != null) {
+                        SimpleBackupUtil.cleanupFailedBackup(serverStopBackup.lastBackupProcessed);
+                    }
+                }));
             }
         });
     }

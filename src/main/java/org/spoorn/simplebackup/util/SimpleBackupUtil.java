@@ -77,4 +77,13 @@ public class SimpleBackupUtil {
             return false;
         }
     }
+    
+    public static void cleanupFailedBackup(Path backupPath) {
+        try {
+            log.info("Attempting to cleanup interrupted backup at {}", backupPath);
+            Files.deleteIfExists(backupPath);
+        } catch (Exception e) {
+            log.error("Could not cleanup interrupted backup process", e);
+        }
+    }
 }

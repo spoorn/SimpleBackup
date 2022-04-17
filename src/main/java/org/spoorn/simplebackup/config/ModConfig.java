@@ -15,6 +15,10 @@ public class ModConfig implements Config {
     @Comment("Delay in seconds between automatic backups. [default = 3600] [minimum = 60]")
     public int backupIntervalInSeconds = 3600;
     
+    @Comment("Only backup if players were online for the backup interval. [default = true]\n" +
+            "You might want to set this to false if the server is loading chunks even when no one is online.")
+    public boolean onlyBackupIfPlayersOnline = true;
+    
     @Comment("True to trigger a backup when server is stopped.  False to disable [default = true]")
     public boolean enableServerStoppedBackup = true;
 

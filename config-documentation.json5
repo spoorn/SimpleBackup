@@ -1,0 +1,11 @@
+{
+  //True to enable automatic backups in intervals.  False to disable [default = true]
+  "enableAutomaticBackups": true,
+  //Delay in seconds between automatic backups. [default = 3600] [minimum = 60]
+  "backupIntervalInSeconds": 3600,
+  //Only backup if players were online for the backup interval. [default = true]
+  //You might want to set this to false if the server is loading chunks even when no one is online.
+  "onlyBackupIfPlayersOnline": true,
+  //True to trigger a backup when server is stopped.  False to disable [default = true]
+  "enableServerStoppedBackup": true
+}

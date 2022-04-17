@@ -9,7 +9,6 @@ import net.minecraft.util.Util;
 import org.spoorn.simplebackup.config.ModConfig;
 import org.spoorn.simplebackup.util.SimpleBackupUtil;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -66,21 +65,19 @@ public class SimpleBackupTask implements Runnable {
         // Automatic backup loops
         while (!terminated) {
             String timeStr = dtf.format(LocalDateTime.now());
-            Path worldBackupPath = this.root.resolve(Path.of(SimpleBackup.BACKUPS_FOLDER, timeStr, this.worldFolderName));
-            log.info("Backing up world [{}] to {}", this.worldFolderName, worldBackupPath);
 
             PlayerManager playerManager = this.server.getPlayerManager();
             playerManager.broadcast(BROADCAST1, MessageType.SYSTEM, Util.NIL_UUID);
-            if (Files.exists(worldBackupPath)) {
-                log.error("Backup at {} already exists!  Skipping...", worldBackupPath);
-            }
-            SimpleBackupUtil.createDirectoryFailSafe(worldBackupPath);
 
-            boolean copied = SimpleBackupUtil.copyDirectoriesFailSafe(this.worldSavePath, worldBackupPath);
-            Text relFolderPath = new LiteralText(timeStr + "/" + this.worldFolderName);
+            boolean copied = SimpleBackupUtil.backup(this.worldSavePath, this.worldFolderName, this.root, timeStr);
+            String broadcastBackupPath = SimpleBackupUtil.ZIP_FORMAT.equals(ModConfig.get().backupFormat) ?
+                    timeStr + ".zip" : timeStr + "/" + this.worldFolderName;
+            Text relFolderPath = new LiteralText(broadcastBackupPath);
             if (copied) {
-                playerManager.broadcast(SUCCESS_BROADCAST.copy().append(relFolderPath).setStyle(Style.EMPTY.withColor(8256183)), MessageType.SYSTEM, Util.NIL_UUID);
+                log.info("Successfully backed up world [{}] to [{}]", this.worldFolderName, broadcastBackupPath);
+                playerManager.broadcast(SUCCESS_BROADCAST.copy().append(relFolderPath).setStyle(Style.EMPTY.withColor(8060843)), MessageType.SYSTEM, Util.NIL_UUID);
             } else {
+                log.error("Server backup for world [{}] failed!  Check the logs for errors.", this.worldFolderName);
                 playerManager.broadcast(FAILED_BROADCAST1.copy().append(relFolderPath).append(FAILED_BROADCAST2).setStyle(Style.EMPTY.withColor(16754871)), MessageType.SYSTEM, Util.NIL_UUID);
             }
             

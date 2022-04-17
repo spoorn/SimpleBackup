@@ -21,6 +21,8 @@ repositories {
     maven {
         url "https://jitpack.io"
     }
+    
+    mavenCentral()
 }
 
 dependencies {
@@ -35,6 +37,9 @@ dependencies {
     // Omega Config
     include("com.github.Draylar.omega-config:omega-config-base:${project.omega_config_version}")
     modImplementation("com.github.Draylar.omega-config:omega-config-base:${project.omega_config_version}")
+    
+    include("net.lingala.zip4j:zip4j:${project.zip4j_version}")
+    implementation("net.lingala.zip4j:zip4j:${project.zip4j_version}")
 }
 
 processResources {

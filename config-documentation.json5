@@ -7,5 +7,8 @@
   //You might want to set this to false if the server is loading chunks even when no one is online.
   "onlyBackupIfPlayersOnline": true,
   //True to trigger a backup when server is stopped.  False to disable [default = true]
-  "enableServerStoppedBackup": true
+  "enableServerStoppedBackup": true,
+  //Backup format.  Supports simply backing up as a direct copy of the folder, or ZIP [default = "ZIP"]
+  //Supported formats: "DIRECTORY", "ZIP"
+  "backupFormat": "ZIP"
 }

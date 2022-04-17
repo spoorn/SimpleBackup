@@ -4,6 +4,7 @@ import draylar.omegaconfig.OmegaConfig;
 import draylar.omegaconfig.api.Comment;
 import draylar.omegaconfig.api.Config;
 import org.spoorn.simplebackup.SimpleBackup;
+import org.spoorn.simplebackup.util.SimpleBackupUtil;
 
 public class ModConfig implements Config {
 
@@ -21,9 +22,16 @@ public class ModConfig implements Config {
     
     @Comment("True to trigger a backup when server is stopped.  False to disable [default = true]")
     public boolean enableServerStoppedBackup = true;
+    
+    @Comment("Backup format.  Supports simply backing up as a direct copy of the folder, or ZIP [default = \"ZIP\"]\n" +
+            "Supported formats: \"DIRECTORY\", \"ZIP\"")
+    public String backupFormat = "ZIP";
 
     public static void init() {
         CONFIG = OmegaConfig.register(ModConfig.class);
+        if (!SimpleBackupUtil.ZIP_FORMAT.equals(CONFIG.backupFormat) && !SimpleBackupUtil.DIRECTORY_FORMAT.equals(CONFIG.backupFormat)) {
+            throw new IllegalArgumentException("SimpleBackup config 'backupFormat' is invalid!");
+        }
     }
 
     public static ModConfig get() {

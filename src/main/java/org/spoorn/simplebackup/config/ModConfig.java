@@ -45,7 +45,9 @@ public class ModConfig implements Config {
             "simplebackup.backup.broadcast", "Starting server backup...",
             "simplebackup.backup.success.broadcast", "Server was successfully backed up to ",
             "simplebackup.backup.failed.broadcast1", "Server failed to backup to ",
-            "simplebackup.backup.failed.broadcast2", ".  Please check the server logs for errors!"
+            "simplebackup.backup.failed.broadcast2", ".  Please check the server logs for errors!",
+            "simplebackup.manualbackup.alreadyexists", "There is already an ongoing manual backup.  Please wait for it to finish before starting another!",
+            "simplebackup.manualbackup.started", " triggered a manual backup"
     ));
 
     public static void init() {

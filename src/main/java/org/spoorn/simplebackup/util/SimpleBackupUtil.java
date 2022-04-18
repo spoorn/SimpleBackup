@@ -104,7 +104,26 @@ public class SimpleBackupUtil {
                 try {
                     Path fileToDelete = backupFiles[backupFiles.length - numBackupFiles].toPath();
                     log.info("Deleting backup at [{}] as we have more backups than maxBackupsToKeep=", fileToDelete, maxBackupsTokeep);
-                    Files.deleteIfExists(fileToDelete);
+                    Files.walkFileTree(fileToDelete, new SimpleFileVisitor<>() {
+                        
+                        @Override
+                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                            Files.delete(file);
+                            return FileVisitResult.CONTINUE;
+                        }
+
+                        @Override
+                        public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                            Files.delete(file);
+                            return FileVisitResult.CONTINUE;
+                        }
+
+                        @Override
+                        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                            Files.delete(dir);
+                            return FileVisitResult.CONTINUE;
+                        }
+                    });
                     numBackupFiles--;
                 } catch (Exception e) {
                     log.error("Could not check if number of backup files exceeds the maxBackupsToKeep", e);

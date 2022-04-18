@@ -123,6 +123,23 @@ public class SimpleBackup implements ModInitializer {
                         .executes(c -> {
                             try {
                                 ServerCommandSource commandSource = c.getSource();
+                                // Check manual backups eanbled
+                                if (!ModConfig.get().enableManualBackups) {
+                                    commandSource.sendFeedback(new LiteralText(broadcastMessages.getOrDefault("simplebackup.manualbackup.disabled",
+                                            "Manual backups are disabled by the server!"))
+                                            .setStyle(Style.EMPTY.withColor(16433282)), true);
+                                    return 1;
+                                }
+                                
+                                // Check permissions
+                                if (!commandSource.getPlayer().hasPermissionLevel(ModConfig.get().permissionLevelForManualBackups)) {
+                                    commandSource.sendFeedback(new LiteralText(broadcastMessages.getOrDefault("simplebackup.manualbackup.notallowed",
+                                            "You don't have permissions to trigger a manual backup!  Sorry :("))
+                                            .setStyle(Style.EMPTY.withColor(16433282)), true);
+                                    return 1;
+                                }
+                                
+                                // Try manual backup
                                 synchronized (manualBackupTask) {
                                     if (manualBackupTask.get() != null) {
                                         commandSource.sendFeedback(new LiteralText(broadcastMessages.getOrDefault("simplebackup.manualbackup.alreadyexists",

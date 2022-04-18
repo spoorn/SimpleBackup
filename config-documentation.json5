@@ -17,13 +17,20 @@
   //Maximum number of backups to keep at a given time.  [default = 10]
   //If we generate a backup, but have more backups than this number, the oldest backup will be deleted.
   "maxBackupsToKeep": 10,
+  //True to enable manual backups, false to disable  [default = true]
+  "enableManualBackups": true,
+  //Permission level to allow manual backups.  [4 = Ops] [0 = everyone] [default = 4]
+  "permissionLevelForManualBackups": 4,
   //Broadcast messages when server is backing up and success/failed.  These are in the config file to allow
-  //servers to use whatever language they want without updating the mod source directly.  If you remove these,
-  //it will default to english.
+  //servers to use whatever language they want without updating the mod source directly.  Default language is english
   "broadcastMessages": {
-    "simplebackup.backup.failed.broadcast2": ".  Please check the server logs for errors!",
-    "simplebackup.backup.broadcast": "Starting server backup...",
+    "simplebackup.backup.failed.broadcast1": "Server failed to backup to ",
     "simplebackup.backup.success.broadcast": "Server was successfully backed up to ",
-    "simplebackup.backup.failed.broadcast1": "Server failed to backup to "
+    "simplebackup.backup.broadcast": "Starting server backup...",
+    "simplebackup.backup.failed.broadcast2": ".  Please check the server logs for errors!",
+    "simplebackup.manualbackup.disabled": "Manual backups are disabled by the server!",
+    "simplebackup.manualbackup.started": " triggered a manual backup",
+    "simplebackup.manualbackup.alreadyexists": "There is already an ongoing manual backup.  Please wait for it to finish before starting another!",
+    "simplebackup.manualbackup.notallowed": "You don\u0027t have permissions to trigger a manual backup!  Sorry :("
   }
 }

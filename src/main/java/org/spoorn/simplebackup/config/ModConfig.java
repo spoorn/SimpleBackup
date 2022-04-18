@@ -12,6 +12,16 @@ import java.util.Map;
 public class ModConfig implements Config {
 
     private static ModConfig CONFIG;
+    private static final Map<String, String> DEFAULT_BROADCAST_MESSAGES = Map.of(
+            "simplebackup.backup.broadcast", "Starting server backup...",
+            "simplebackup.backup.success.broadcast", "Server was successfully backed up to ",
+            "simplebackup.backup.failed.broadcast1", "Server failed to backup to ",
+            "simplebackup.backup.failed.broadcast2", ".  Please check the server logs for errors!",
+            "simplebackup.manualbackup.alreadyexists", "There is already an ongoing manual backup.  Please wait for it to finish before starting another!",
+            "simplebackup.manualbackup.started", " triggered a manual backup",
+            "simplebackup.manualbackup.disabled", "Manual backups are disabled by the server!",
+            "simplebackup.manualbackup.notallowed", "You don't have permissions to trigger a manual backup!  Sorry :("
+    );
 
     @Comment("True to enable automatic backups in intervals.  False to disable [default = true]")
     public boolean enableAutomaticBackups = true;
@@ -38,17 +48,15 @@ public class ModConfig implements Config {
             "If we generate a backup, but have more backups than this number, the oldest backup will be deleted.")
     public int maxBackupsToKeep = 10;
     
+    @Comment("True to enable manual backups, false to disable  [default = true]")
+    public boolean enableManualBackups = true;
+    
+    @Comment("Permission level to allow manual backups.  [4 = Ops] [0 = everyone] [default = 4]")
+    public int permissionLevelForManualBackups = 4;
+    
     @Comment("Broadcast messages when server is backing up and success/failed.  These are in the config file to allow\n" +
-            "servers to use whatever language they want without updating the mod source directly.  If you remove these,\n" +
-            "it will default to english.")
-    public Map<String, String> broadcastMessages = new HashMap<>(Map.of(
-            "simplebackup.backup.broadcast", "Starting server backup...",
-            "simplebackup.backup.success.broadcast", "Server was successfully backed up to ",
-            "simplebackup.backup.failed.broadcast1", "Server failed to backup to ",
-            "simplebackup.backup.failed.broadcast2", ".  Please check the server logs for errors!",
-            "simplebackup.manualbackup.alreadyexists", "There is already an ongoing manual backup.  Please wait for it to finish before starting another!",
-            "simplebackup.manualbackup.started", " triggered a manual backup"
-    ));
+            "servers to use whatever language they want without updating the mod source directly.  Default language is english")
+    public Map<String, String> broadcastMessages = new HashMap<>(DEFAULT_BROADCAST_MESSAGES);
 
     public static void init() {
         CONFIG = OmegaConfig.register(ModConfig.class);
@@ -59,6 +67,16 @@ public class ModConfig implements Config {
 
     public static ModConfig get() {
         return CONFIG;
+    }
+
+    @Override
+    public void save() {
+        for (Map.Entry<String, String> entry : DEFAULT_BROADCAST_MESSAGES.entrySet()) {
+            if (!this.broadcastMessages.containsKey(entry.getKey())) {
+                this.broadcastMessages.put(entry.getKey(), entry.getValue());
+            }
+        }
+        Config.super.save();
     }
 
     @Override

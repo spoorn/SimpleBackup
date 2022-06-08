@@ -9,6 +9,7 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 import org.spoorn.simplebackup.config.ModConfig;
+import org.spoorn.simplebackup.util.ClientUtil;
 import org.spoorn.simplebackup.util.SimpleBackupUtil;
 
 import java.nio.file.Path;
@@ -123,7 +124,8 @@ public class SimpleBackupTask implements Runnable {
             // online, or the single player game is paused.  This does mean the next backup's changed content
             // might span a duration less than the backup intervals, but this is intended as I think it's better
             // than trying to make sure each backup has an exact "online running" difference from the previous.
-            if (ModConfig.get().onlyBackupIfPlayersOnline && playerManager.getCurrentPlayerCount() == 0) {
+            if ((ModConfig.get().onlyBackupIfPlayersOnline && playerManager.getCurrentPlayerCount() == 0)
+                || (this.server.isSingleplayer() && ClientUtil.isPaused())) {
                 // Wait until a player logs on
                 synchronized (this.lock) {
                     this.lock.wait();

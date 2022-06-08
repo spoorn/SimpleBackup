@@ -29,6 +29,7 @@ public class SimpleBackup implements ModInitializer {
     public static final String MODID = "simplebackup";
     public static final String BACKUPS_FOLDER = "backup";
     private static final AtomicReference<SimpleBackupTask> manualBackupTask = new AtomicReference<>();
+    public static AtomicReference<SimpleBackupTask> simpleBackupTask = new AtomicReference<>();
     
     @Override
     public void onInitialize() {
@@ -49,7 +50,6 @@ public class SimpleBackup implements ModInitializer {
 
         // Automatic backups
         final boolean enableAutomaticBackups = ModConfig.get().enableAutomaticBackups;
-        AtomicReference<SimpleBackupTask> simpleBackupTask = new AtomicReference<>();
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             if (enableAutomaticBackups) {
                 log.info("Automatic backups are enabled");
@@ -58,7 +58,7 @@ public class SimpleBackup implements ModInitializer {
                 Path worldSavePath = accessor.getSession().getDirectory(WorldSavePath.ROOT).getParent();
 
                 int backupIntervals = ModConfig.get().backupIntervalInSeconds;
-                log.info("Scheduling a backup every {} seconds...", Math.max(60, backupIntervals));
+                log.info("Scheduling a backup every {} seconds...", Math.max(10, backupIntervals));
                 simpleBackupTask.set(SimpleBackupTask.builder(root, worldFolderName, worldSavePath, server)
                         .backupIntervalInSeconds(backupIntervals)
                         .build());

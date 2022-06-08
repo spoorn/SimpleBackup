@@ -1,7 +1,8 @@
 {
-  //True to enable automatic backups in intervals.  False to disable [default = true]
+  //True to enable automatic backups in intervals.  False to disable. [default = true]
+  //In single player, only backs up if the game is not paused.
   "enableAutomaticBackups": true,
-  //Delay in seconds between automatic backups. [default = 3600] [minimum = 60]
+  //Delay in seconds between automatic backups. [default = 3600] [minimum = 10]
   "backupIntervalInSeconds": 3600,
   //Only backup if players were online for the backup interval. [default = true]
   //You might want to set this to false if the server is loading chunks even when no one is online.

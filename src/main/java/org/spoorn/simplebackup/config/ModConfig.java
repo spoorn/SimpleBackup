@@ -23,10 +23,11 @@ public class ModConfig implements Config {
             "simplebackup.manualbackup.notallowed", "You don't have permissions to trigger a manual backup!  Sorry :("
     );
 
-    @Comment("True to enable automatic backups in intervals.  False to disable [default = true]")
+    @Comment("True to enable automatic backups in intervals.  False to disable. [default = true]\n" +
+            "In single player, only backs up if the game is not paused.")
     public boolean enableAutomaticBackups = true;
     
-    @Comment("Delay in seconds between automatic backups. [default = 3600] [minimum = 60]")
+    @Comment("Delay in seconds between automatic backups. [default = 3600] [minimum = 10]")
     public int backupIntervalInSeconds = 3600;
     
     @Comment("Only backup if players were online for the backup interval. [default = true]\n" +

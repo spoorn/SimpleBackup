@@ -1,10 +1,10 @@
 package org.spoorn.simplebackup;
 
 import lombok.extern.log4j.Log4j2;
-import net.minecraft.network.MessageType;
+import net.minecraft.network.message.MessageType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
@@ -46,10 +46,10 @@ public class SimpleBackupTask implements Runnable {
     
     public static void init() {
         Map<String, String> broadcastMessages = ModConfig.get().broadcastMessages;
-        BROADCAST1 = new LiteralText(broadcastMessages.getOrDefault("simplebackup.backup.broadcast", "Starting server backup...")).setStyle(Style.EMPTY.withColor(13543679));
-        SUCCESS_BROADCAST = new LiteralText(broadcastMessages.getOrDefault("simplebackup.backup.success.broadcast", "Server was successfully backed up to "));
-        FAILED_BROADCAST1 = new LiteralText(broadcastMessages.getOrDefault("simplebackup.backup.failed.broadcast1", "Server failed to backup to "));
-        FAILED_BROADCAST2 = new LiteralText(broadcastMessages.getOrDefault("simplebackup.backup.failed.broadcast2", ".  Please check the server logs for errors!"));
+        BROADCAST1 = Text.literal(broadcastMessages.getOrDefault("simplebackup.backup.broadcast", "Starting server backup...")).setStyle(Style.EMPTY.withColor(13543679));
+        SUCCESS_BROADCAST = Text.literal(broadcastMessages.getOrDefault("simplebackup.backup.success.broadcast", "Server was successfully backed up to "));
+        FAILED_BROADCAST1 = Text.literal(broadcastMessages.getOrDefault("simplebackup.backup.failed.broadcast1", "Server failed to backup to "));
+        FAILED_BROADCAST2 = Text.literal(broadcastMessages.getOrDefault("simplebackup.backup.failed.broadcast2", ".  Please check the server logs for errors!"));
     }
 
     public static SimpleBackupTaskBuilder builder(final Path root, final String worldFolderName, final Path worldSavePath, 
@@ -77,7 +77,7 @@ public class SimpleBackupTask implements Runnable {
         while (!terminated) {
             this.isProcessing = true;
             String timeStr = dtf.format(LocalDateTime.now());
-            playerManager.broadcast(BROADCAST1, MessageType.SYSTEM, Util.NIL_UUID);
+            playerManager.broadcast(BROADCAST1, MessageType.SYSTEM);
 
             String broadcastBackupPath;
             if (SimpleBackupUtil.ZIP_FORMAT.equals(ModConfig.get().backupFormat)) {
@@ -89,13 +89,13 @@ public class SimpleBackupTask implements Runnable {
             }
             boolean copied = SimpleBackupUtil.backup(this.worldSavePath, this.worldFolderName, this.root, timeStr)
                     && SimpleBackupUtil.deleteStaleBackupFiles(this.root);
-            Text relFolderPath = new LiteralText(broadcastBackupPath);
+            Text relFolderPath = Text.literal(broadcastBackupPath);
             if (copied) {
                 log.info("Successfully backed up world [{}] to [{}]", this.worldFolderName, broadcastBackupPath);
-                playerManager.broadcast(SUCCESS_BROADCAST.copy().append(relFolderPath).setStyle(Style.EMPTY.withColor(8060843)), MessageType.SYSTEM, Util.NIL_UUID);
+                playerManager.broadcast(SUCCESS_BROADCAST.copyContentOnly().append(relFolderPath).setStyle(Style.EMPTY.withColor(8060843)), MessageType.SYSTEM);
             } else {
                 log.error("Server backup for world [{}] failed!  Check the logs for errors.", this.worldFolderName);
-                playerManager.broadcast(FAILED_BROADCAST1.copy().append(relFolderPath).append(FAILED_BROADCAST2).setStyle(Style.EMPTY.withColor(16754871)), MessageType.SYSTEM, Util.NIL_UUID);
+                playerManager.broadcast(FAILED_BROADCAST1.copyContentOnly().append(relFolderPath).append(FAILED_BROADCAST2).setStyle(Style.EMPTY.withColor(16754871)), MessageType.SYSTEM);
             }
             
             this.isProcessing = false;

@@ -4,16 +4,15 @@ import static net.minecraft.server.command.CommandManager.literal;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.extern.log4j.Log4j2;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.network.MessageType;
+import net.minecraft.network.message.MessageType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
-import net.minecraft.util.Util;
+import net.minecraft.text.Text;
 import net.minecraft.util.WorldSavePath;
 import org.spoorn.simplebackup.config.ModConfig;
 import org.spoorn.simplebackup.mixin.MinecraftServerAccessor;
@@ -113,7 +112,7 @@ public class SimpleBackup implements ModInitializer {
         
         // Commands
         Map<String, String> broadcastMessages = ModConfig.get().broadcastMessages;
-        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(literal("simplebackup")
                     .then(literal("start")
                         .executes(c -> {
@@ -121,7 +120,7 @@ public class SimpleBackup implements ModInitializer {
                                 ServerCommandSource commandSource = c.getSource();
                                 // Check manual backups enabled
                                 if (!ModConfig.get().enableManualBackups) {
-                                    commandSource.sendFeedback(new LiteralText(broadcastMessages.getOrDefault("simplebackup.manualbackup.disabled",
+                                    commandSource.sendFeedback(Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.disabled",
                                             "Manual backups are disabled by the server!"))
                                             .setStyle(Style.EMPTY.withColor(16433282)), true);
                                     return 1;
@@ -129,14 +128,14 @@ public class SimpleBackup implements ModInitializer {
                                 
                                 boolean fromPlayer = true;
                                 try {
-                                    commandSource.getPlayer();
+                                    commandSource.getPlayerOrThrow();
                                 } catch (CommandSyntaxException e) {
                                     fromPlayer = false;
                                 }
                                 
                                 // Check permissions
-                                if (fromPlayer && !commandSource.getPlayer().hasPermissionLevel(ModConfig.get().permissionLevelForManualBackups)) {
-                                    commandSource.sendFeedback(new LiteralText(broadcastMessages.getOrDefault("simplebackup.manualbackup.notallowed",
+                                if (fromPlayer && !commandSource.getPlayerOrThrow().hasPermissionLevel(ModConfig.get().permissionLevelForManualBackups)) {
+                                    commandSource.sendFeedback(Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.notallowed",
                                             "You don't have permissions to trigger a manual backup!  Sorry :("))
                                             .setStyle(Style.EMPTY.withColor(16433282)), true);
                                     return 1;
@@ -145,21 +144,21 @@ public class SimpleBackup implements ModInitializer {
                                 // Try manual backup
                                 synchronized (manualBackupTask) {
                                     if (manualBackupTask.get() != null) {
-                                        commandSource.sendFeedback(new LiteralText(broadcastMessages.getOrDefault("simplebackup.manualbackup.alreadyexists",
+                                        commandSource.sendFeedback(Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.alreadyexists",
                                                 "There is already an ongoing manual backup.  Please wait for it to finish before starting another!"))
                                                 .setStyle(Style.EMPTY.withColor(16433282)), true);
                                     } else {
                                         if (fromPlayer) {
                                             commandSource.getServer().getPlayerManager().broadcast(
-                                                    c.getSource().getPlayer().getDisplayName().copy().append(
-                                                            new LiteralText(broadcastMessages.getOrDefault("simplebackup.manualbackup.started",
+                                                    c.getSource().getPlayerOrThrow().getDisplayName().copyContentOnly().append(
+                                                            Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.started",
                                                                     " triggered a manual backup"))
-                                                                    .setStyle(Style.EMPTY.withColor(16433282))), MessageType.SYSTEM, Util.NIL_UUID);
+                                                                    .setStyle(Style.EMPTY.withColor(16433282))), MessageType.SYSTEM);
                                         } else {
                                             // Could not find a player, so broadcasting as a general message
-                                            commandSource.getServer().getPlayerManager().broadcast(new LiteralText("Server" + 
+                                            commandSource.getServer().getPlayerManager().broadcast(Text.literal("Server" + 
                                                     broadcastMessages.getOrDefault("simplebackup.manualbackup.started", " triggered a manual backup"))
-                                                    .setStyle(Style.EMPTY.withColor(16433282)), MessageType.SYSTEM, Util.NIL_UUID);
+                                                    .setStyle(Style.EMPTY.withColor(16433282)), MessageType.SYSTEM);
                                         }
 
                                         MinecraftServer server = commandSource.getServer();

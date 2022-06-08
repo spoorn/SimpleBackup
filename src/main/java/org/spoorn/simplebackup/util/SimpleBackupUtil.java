@@ -103,7 +103,7 @@ public class SimpleBackupUtil {
             while (numBackupFiles > maxBackupsTokeep) {
                 try {
                     Path fileToDelete = backupFiles[backupFiles.length - numBackupFiles].toPath();
-                    log.info("Deleting backup at [{}] as we have more backups than maxBackupsToKeep=", fileToDelete, maxBackupsTokeep);
+                    log.info("Deleting backup at [{}] as we have more backups than maxBackupsToKeep={}", fileToDelete, maxBackupsTokeep);
                     Files.walkFileTree(fileToDelete, new SimpleFileVisitor<>() {
                         
                         @Override

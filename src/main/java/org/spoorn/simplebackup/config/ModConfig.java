@@ -33,7 +33,9 @@ public class ModConfig implements Config {
             "You might want to set this to false if the server is loading chunks even when no one is online.")
     public boolean onlyBackupIfPlayersOnline = true;
     
-    @Comment("True to trigger a backup when server is stopped.  False to disable [default = true]")
+    @Comment("True to trigger a backup when server is stopped.  False to disable [default = true]\n" +
+            "Note: this may not properly finish the backup if you try to terminate the process with an interruption\n" +
+            "\tsuch as CTRL+C!  Double check the backup file is the size you expect")
     public boolean enableServerStoppedBackup = true;
     
     @Comment("Backup format.  Supports simply backing up as a direct copy of the folder, or ZIP [default = \"ZIP\"]\n" +

@@ -1,14 +1,11 @@
 package org.spoorn.simplebackup;
 
 import lombok.extern.log4j.Log4j2;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.message.MessageType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.Util;
 import org.spoorn.simplebackup.config.ModConfig;
 import org.spoorn.simplebackup.util.ClientUtil;
 import org.spoorn.simplebackup.util.SimpleBackupUtil;
@@ -78,28 +75,7 @@ public class SimpleBackupTask implements Runnable {
         // Automatic backup loops
         while (!terminated) {
             this.isProcessing = true;
-            String timeStr = dtf.format(LocalDateTime.now());
-            playerManager.broadcast(BROADCAST1, MessageType.SYSTEM);
-
-            String broadcastBackupPath;
-            if (SimpleBackupUtil.ZIP_FORMAT.equals(ModConfig.get().backupFormat)) {
-                broadcastBackupPath = timeStr + ".zip";
-                this.lastBackupProcessed = this.root.resolve(Path.of(SimpleBackup.BACKUPS_FOLDER, broadcastBackupPath));
-            } else {
-                broadcastBackupPath = timeStr + "/" + this.worldFolderName;
-                this.lastBackupProcessed = this.root.resolve(Path.of(SimpleBackup.BACKUPS_FOLDER, timeStr));
-            }
-            boolean copied = SimpleBackupUtil.backup(this.worldSavePath, this.worldFolderName, this.root, timeStr)
-                    && SimpleBackupUtil.deleteStaleBackupFiles(this.root);
-            Text relFolderPath = Text.literal(broadcastBackupPath);
-            if (copied) {
-                log.info("Successfully backed up world [{}] to [{}]", this.worldFolderName, broadcastBackupPath);
-                playerManager.broadcast(SUCCESS_BROADCAST.copyContentOnly().append(relFolderPath).setStyle(Style.EMPTY.withColor(8060843)), MessageType.SYSTEM);
-            } else {
-                log.error("Server backup for world [{}] failed!  Check the logs for errors.", this.worldFolderName);
-                playerManager.broadcast(FAILED_BROADCAST1.copyContentOnly().append(relFolderPath).append(FAILED_BROADCAST2).setStyle(Style.EMPTY.withColor(16754871)), MessageType.SYSTEM);
-            }
-            
+            backup();
             this.isProcessing = false;
             if (this.backupIntervalInMillis > 1000) {
                 waitToContinue(playerManager);
@@ -110,6 +86,33 @@ public class SimpleBackupTask implements Runnable {
         }
     }
     
+    public void backup() {
+        PlayerManager playerManager = this.server.getPlayerManager();
+
+        String timeStr = dtf.format(LocalDateTime.now());
+        playerManager.broadcast(BROADCAST1, MessageType.SYSTEM);
+
+        String broadcastBackupPath;
+        if (SimpleBackupUtil.ZIP_FORMAT.equals(ModConfig.get().backupFormat)) {
+            broadcastBackupPath = timeStr + ".zip";
+            this.lastBackupProcessed = this.root.resolve(Path.of(SimpleBackup.BACKUPS_FOLDER, broadcastBackupPath));
+        } else {
+            broadcastBackupPath = timeStr + "/" + this.worldFolderName;
+            this.lastBackupProcessed = this.root.resolve(Path.of(SimpleBackup.BACKUPS_FOLDER, timeStr));
+        }
+        boolean copied = SimpleBackupUtil.backup(this.worldSavePath, this.worldFolderName, this.root, timeStr)
+                && SimpleBackupUtil.deleteStaleBackupFiles(this.root);
+        Text relFolderPath = Text.literal(broadcastBackupPath);
+        if (copied) {
+            log.info("Successfully backed up world [{}] to [{}]", this.worldFolderName, broadcastBackupPath);
+            playerManager.broadcast(SUCCESS_BROADCAST.copyContentOnly().append(relFolderPath).setStyle(Style.EMPTY.withColor(8060843)), MessageType.SYSTEM);
+        } else {
+            log.error("Server backup for world [{}] failed!  Check the logs for errors.", this.worldFolderName);
+            playerManager.broadcast(FAILED_BROADCAST1.copyContentOnly().append(relFolderPath).append(FAILED_BROADCAST2).setStyle(Style.EMPTY.withColor(16754871)), MessageType.SYSTEM);
+        }
+    }
+    
+    // This doesn't account for spurious wakeups!
     private void waitToContinue(PlayerManager playerManager) {
         // Automatic periodic backups
         try {
@@ -127,7 +130,9 @@ public class SimpleBackupTask implements Runnable {
                 }
             }
 
-            Thread.sleep(this.backupIntervalInMillis);
+            if (!this.terminated) {
+                Thread.sleep(this.backupIntervalInMillis);
+            }
         } catch (InterruptedException e) {
             log.error("SimpleBackupTask thread interrupted", e);
         }

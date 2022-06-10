@@ -35,8 +35,8 @@ public class ModConfig implements Config {
     public boolean onlyBackupIfPlayersOnline = true;
     
     @Comment("True to trigger a backup when server is stopped.  False to disable [default = true]\n" +
-            "WARNING: this will only reliably trigger and finish if you stop server via a 'stop' command to the server console.\n" +
-            "\tIf you exit the server via another termination mechanism such as CTRL+C, the backup may not be complete.")
+            "Note: this may not properly finish the backup if you try to terminate the process with an interruption\n" +
+            "\tsuch as CTRL+C!  Double check the backup file is the size you expect")
     public boolean enableServerStoppedBackup = true;
     
     @Comment("Backup format.  Supports simply backing up as a direct copy of the folder, or ZIP [default = \"ZIP\"]\n" +

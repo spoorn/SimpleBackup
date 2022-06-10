@@ -8,8 +8,13 @@
   //You might want to set this to false if the server is loading chunks even when no one is online.
   "onlyBackupIfPlayersOnline": true,
   //True to trigger a backup when server is stopped.  False to disable [default = true]
+<<<<<<< HEAD
   //WARNING: this will only reliably trigger and finish if you stop server via a 'stop' command to the server console.
   //	If you exit the server via another termination mechanism such as CTRL+C, the backup may not be complete.
+=======
+  //Note: this may not properly finish the backup if you try to terminate the process with an interruption
+  //	such as CTRL+C!  Double check the backup file is the size you expect
+>>>>>>> 99f86d8 (Bump to 1.2.2)
   "enableServerStoppedBackup": true,
   //Backup format.  Supports simply backing up as a direct copy of the folder, or ZIP [default = "ZIP"]
   //Supported formats: "DIRECTORY", "ZIP"
@@ -27,10 +32,10 @@
   //Broadcast messages when server is backing up and success/failed.  These are in the config file to allow
   //servers to use whatever language they want without updating the mod source directly.  Default language is english
   "broadcastMessages": {
-    "simplebackup.backup.failed.broadcast1": "Server failed to backup to ",
     "simplebackup.backup.success.broadcast": "Server was successfully backed up to ",
-    "simplebackup.backup.broadcast": "Starting server backup...",
+    "simplebackup.backup.failed.broadcast1": "Server failed to backup to ",
     "simplebackup.backup.failed.broadcast2": ".  Please check the server logs for errors!",
+    "simplebackup.backup.broadcast": "Starting server backup...",
     "simplebackup.manualbackup.disabled": "Manual backups are disabled by the server!",
     "simplebackup.manualbackup.started": " triggered a manual backup",
     "simplebackup.manualbackup.alreadyexists": "There is already an ongoing manual backup.  Please wait for it to finish before starting another!",

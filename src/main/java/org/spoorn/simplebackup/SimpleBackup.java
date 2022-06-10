@@ -89,9 +89,10 @@ public class SimpleBackup implements ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             SimpleBackupTask autoBackup;
             if (enableAutomaticBackups && (autoBackup = simpleBackupTask.get()) != null) {
+                log.info("Terminating automatic backup thread");
                 autoBackup.terminate();
             }
-            
+
             if (ModConfig.get().enableServerStoppedBackup) {
                 log.info("Server has stopped - creating a backup");
                 MinecraftServerAccessor accessor = (MinecraftServerAccessor) server;
@@ -100,7 +101,7 @@ public class SimpleBackup implements ModInitializer {
 
                 SimpleBackupTask serverStopBackup = SimpleBackupTask.builder(root, worldFolderName, worldSavePath, server)
                                 .build();
-                serverStopBackup.run();
+                serverStopBackup.backup();
 
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                     if (serverStopBackup.isProcessing && serverStopBackup.lastBackupProcessed != null) {

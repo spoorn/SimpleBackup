@@ -50,6 +50,7 @@ public class SimpleBackup implements ModInitializer {
 
         // Automatic backups
         final boolean enableAutomaticBackups = ModConfig.get().enableAutomaticBackups;
+        final AtomicReference<Thread> automaticBackupThread = new AtomicReference<>();
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             if (enableAutomaticBackups) {
                 log.info("Automatic backups are enabled");
@@ -64,6 +65,7 @@ public class SimpleBackup implements ModInitializer {
                         .build());
                 Thread backupThread = new Thread(simpleBackupTask.get());
                 backupThread.start();
+                automaticBackupThread.set(backupThread);
             }
         });
         
@@ -92,6 +94,9 @@ public class SimpleBackup implements ModInitializer {
             if (enableAutomaticBackups && (autoBackup = simpleBackupTask.get()) != null) {
                 log.info("Terminating automatic backup thread");
                 autoBackup.terminate();
+                if (automaticBackupThread.get() != null) {
+                    automaticBackupThread.get().interrupt();
+                }
             }
 
             if (ModConfig.get().enableServerStoppedBackup) {

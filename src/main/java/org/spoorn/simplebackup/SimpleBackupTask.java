@@ -84,6 +84,8 @@ public class SimpleBackupTask implements Runnable {
                 break;
             }
         }
+        
+        log.info("SimpleBackupTask Finished!");
     }
     
     public void backup() {
@@ -134,7 +136,11 @@ public class SimpleBackupTask implements Runnable {
                 Thread.sleep(this.backupIntervalInMillis);
             }
         } catch (InterruptedException e) {
-            log.error("SimpleBackupTask thread interrupted", e);
+            if (this.terminated) {
+                log.info("SimpleBackupTask interrupted by main thread");
+            } else {
+                log.error("SimpleBackupTask thread interrupted", e);
+            }
         }
     }
 

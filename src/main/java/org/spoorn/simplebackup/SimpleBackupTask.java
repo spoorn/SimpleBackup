@@ -29,7 +29,6 @@ public class SimpleBackupTask implements Runnable {
     public final Object lock = new Object();
     public boolean isProcessing = false;
     public Path lastBackupProcessed;
-    private final Path root;
     private final String worldFolderName;
     private final Path worldSavePath;
     private final MinecraftServer server;
@@ -37,8 +36,7 @@ public class SimpleBackupTask implements Runnable {
     
     private boolean terminated = false;
 
-    SimpleBackupTask(Path root, String worldFolderName, Path worldSavePath, MinecraftServer server, int backupIntervalInSeconds) {
-        this.root = root;
+    SimpleBackupTask(String worldFolderName, Path worldSavePath, MinecraftServer server, int backupIntervalInSeconds) {
         this.worldFolderName = worldFolderName;
         this.worldSavePath = worldSavePath;
         this.server = server;
@@ -53,9 +51,9 @@ public class SimpleBackupTask implements Runnable {
         FAILED_BROADCAST2 = new LiteralText(broadcastMessages.getOrDefault("simplebackup.backup.failed.broadcast2", ".  Please check the server logs for errors!"));
     }
 
-    public static SimpleBackupTaskBuilder builder(final Path root, final String worldFolderName, final Path worldSavePath, 
+    public static SimpleBackupTaskBuilder builder(final String worldFolderName, final Path worldSavePath, 
                                                   final MinecraftServer server) {
-        return new SimpleBackupTaskBuilder().root(root).worldFolderName(worldFolderName).worldSavePath(worldSavePath).server(server);
+        return new SimpleBackupTaskBuilder().worldFolderName(worldFolderName).worldSavePath(worldSavePath).server(server);
     }
     
     public void terminate() {
@@ -99,13 +97,13 @@ public class SimpleBackupTask implements Runnable {
         String broadcastBackupPath;
         if (SimpleBackupUtil.ZIP_FORMAT.equals(ModConfig.get().backupFormat)) {
             broadcastBackupPath = timeStr + ".zip";
-            this.lastBackupProcessed = this.root.resolve(Path.of(SimpleBackup.BACKUPS_FOLDER, broadcastBackupPath));
+            this.lastBackupProcessed = SimpleBackupUtil.getBackupPath().resolve(broadcastBackupPath);
         } else {
             broadcastBackupPath = timeStr + "/" + this.worldFolderName;
-            this.lastBackupProcessed = this.root.resolve(Path.of(SimpleBackup.BACKUPS_FOLDER, timeStr));
+            this.lastBackupProcessed = SimpleBackupUtil.getBackupPath().resolve(timeStr);
         }
-        boolean copied = SimpleBackupUtil.backup(this.worldSavePath, this.worldFolderName, this.root, timeStr)
-                && SimpleBackupUtil.deleteStaleBackupFiles(this.root);
+        boolean copied = SimpleBackupUtil.backup(this.worldSavePath, this.worldFolderName, timeStr)
+                && SimpleBackupUtil.deleteStaleBackupFiles();
         Text relFolderPath = new LiteralText(broadcastBackupPath);
         if (copied) {
             log.info("Successfully backed up world [{}] to [{}]", this.worldFolderName, broadcastBackupPath);
@@ -150,18 +148,12 @@ public class SimpleBackupTask implements Runnable {
      * Manual builder because lombok is stupid: https://github.com/projectlombok/lombok/issues/2307.
      */
     public static class SimpleBackupTaskBuilder {
-        private Path root;
         private String worldFolderName;
         private Path worldSavePath;
         private MinecraftServer server;
         private int backupIntervalInSeconds = -1;
 
         SimpleBackupTaskBuilder() {
-        }
-
-        public SimpleBackupTaskBuilder root(Path root) {
-            this.root = root;
-            return this;
         }
 
         public SimpleBackupTaskBuilder worldFolderName(String worldFolderName) {
@@ -185,11 +177,11 @@ public class SimpleBackupTask implements Runnable {
         }
 
         public SimpleBackupTask build() {
-            return new SimpleBackupTask(root, worldFolderName, worldSavePath, server, backupIntervalInSeconds);
+            return new SimpleBackupTask(worldFolderName, worldSavePath, server, backupIntervalInSeconds);
         }
 
         public String toString() {
-            return "SimpleBackupTask.SimpleBackupTaskBuilder(root=" + this.root + ", worldFolderName=" + this.worldFolderName + ", worldSavePath=" + this.worldSavePath + ", server=" + this.server + ", backupIntervalInSeconds=" + this.backupIntervalInSeconds + ")";
+            return "SimpleBackupTask.SimpleBackupTaskBuilder(worldFolderName=" + this.worldFolderName + ", worldSavePath=" + this.worldSavePath + ", server=" + this.server + ", backupIntervalInSeconds=" + this.backupIntervalInSeconds + ")";
         }
     }
 }

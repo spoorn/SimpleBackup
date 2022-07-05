@@ -1,7 +1,7 @@
 package org.spoorn.simplebackup.util;
 
 import lombok.extern.log4j.Log4j2;
-import org.spoorn.simplebackup.SimpleBackup;
+import net.fabricmc.loader.api.FabricLoader;
 import org.spoorn.simplebackup.ZipCompressor;
 import org.spoorn.simplebackup.config.ModConfig;
 
@@ -31,14 +31,25 @@ public class SimpleBackupUtil {
         }
     }
     
-    public static boolean backup(Path source, String worldFolderName, Path gameDir, String timeStr) {
-        if (!checkAvailableSpace(source, gameDir)) {
+    public static Path getBackupPath() {
+        String backupPath = ModConfig.get().backupPath;
+        Path p = Paths.get(backupPath);
+        if (p.isAbsolute()) {
+            return p;
+        } else {
+            Path root = FabricLoader.getInstance().getGameDir();
+            return root.resolve(backupPath);
+        }
+    }
+    
+    public static boolean backup(Path source, String worldFolderName, String timeStr) {
+        if (!checkAvailableSpace(source)) {
             return false;
         }
         
         String backupFormat = ModConfig.get().backupFormat;
         if (ZIP_FORMAT.equals(backupFormat)) {
-            Path destination = gameDir.resolve(Path.of(SimpleBackup.BACKUPS_FOLDER, timeStr));
+            Path destination = getBackupPath().resolve(timeStr);
             String destinationFile = destination + ZipCompressor.ZIP_EXTENSION;
             log.info("Backing up world [{}] to {}", source, destinationFile);
             if (Files.exists(Path.of(destinationFile))) {
@@ -46,7 +57,7 @@ public class SimpleBackupUtil {
             }
             return ZipCompressor.zip(source.toString(), destination.toString());
         } else if (DIRECTORY_FORMAT.equals(backupFormat)) {
-            Path destination = gameDir.resolve(Path.of(SimpleBackup.BACKUPS_FOLDER, timeStr, worldFolderName));
+            Path destination = getBackupPath().resolve(Path.of(timeStr, worldFolderName));
             log.info("Backing up world [{}] to {}", source, destination);
             if (Files.exists(destination)) {
                 log.error("Backup at {} already exists!  Skipping...", destination);
@@ -59,8 +70,8 @@ public class SimpleBackupUtil {
         }
     }
     
-    private static boolean checkAvailableSpace(Path source, Path gameDir) {
-        File partition = gameDir.toFile();
+    private static boolean checkAvailableSpace(Path source) {
+        File partition = getBackupPath().toFile();
         double availableDiskSpace = ((double) partition.getUsableSpace()) / partition.getTotalSpace() * 100;
         if (availableDiskSpace < ModConfig.get().percentageAvailableDiskSpaceRequirement) {
             log.error(String.format("Not enough available disk space to create backup! Disk space available: %.2f%%.  " +
@@ -79,8 +90,8 @@ public class SimpleBackupUtil {
         return true;
     }
     
-    public static boolean deleteStaleBackupFiles(Path gameDir) {
-        File[] backupFiles = gameDir.resolve(SimpleBackup.BACKUPS_FOLDER).toFile().listFiles();
+    public static boolean deleteStaleBackupFiles() {
+        File[] backupFiles = getBackupPath().toFile().listFiles();
         if (backupFiles != null) {
             int numBackupFiles = backupFiles.length;
             AtomicBoolean errorWhileSorting = new AtomicBoolean(false);

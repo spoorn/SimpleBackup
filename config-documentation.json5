@@ -17,6 +17,13 @@
   //Percentage of disk space available required before creating a backup.  [default = 20]
   //This will prevent generating backups if your disk space is getting close to maxing out.
   "percentageAvailableDiskSpaceRequirement": 20,
+  //Backup folder.  If this is set to a relative path, it will be relative to the game directory [default = "backup"]
+  //This can be an absolute path as well if you want to store backups in a different location.
+  //Note: If you are using backslashes '\' instead of forward slash, you will need to escape it with double backslash '\\'.
+  //Examples:
+  //	"backupPath": "F:/mybackups/backup",
+  //	"backupPath": "F:\\mybackups\\backup",
+  "backupPath": "backup",
   //Maximum number of backups to keep at a given time.  [default = 10]
   //If we generate a backup, but have more backups than this number, the oldest backup will be deleted.
   "maxBackupsToKeep": 10,
@@ -24,13 +31,15 @@
   "enableManualBackups": true,
   //Permission level to allow manual backups.  [4 = Ops] [0 = everyone] [default = 4]
   "permissionLevelForManualBackups": 4,
+  //True to broadcast across the server when backups are triggered and finished.  False to disable. [default = true]
+  "broadcastBackupMessage": true,
   //Broadcast messages when server is backing up and success/failed.  These are in the config file to allow
   //servers to use whatever language they want without updating the mod source directly.  Default language is english
   "broadcastMessages": {
     "simplebackup.backup.success.broadcast": "Server was successfully backed up to ",
     "simplebackup.backup.failed.broadcast1": "Server failed to backup to ",
-    "simplebackup.backup.failed.broadcast2": ".  Please check the server logs for errors!",
     "simplebackup.backup.broadcast": "Starting server backup...",
+    "simplebackup.backup.failed.broadcast2": ".  Please check the server logs for errors!",
     "simplebackup.manualbackup.disabled": "Manual backups are disabled by the server!",
     "simplebackup.manualbackup.started": " triggered a manual backup",
     "simplebackup.manualbackup.alreadyexists": "There is already an ongoing manual backup.  Please wait for it to finish before starting another!",

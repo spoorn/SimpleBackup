@@ -90,7 +90,7 @@ public class SimpleBackupTask implements Runnable {
         PlayerManager playerManager = this.server.getPlayerManager();
 
         String timeStr = dtf.format(LocalDateTime.now());
-        playerManager.broadcast(BROADCAST1, MessageType.SYSTEM);
+        SimpleBackupUtil.broadcastMessage(BROADCAST1, playerManager);
 
         String broadcastBackupPath;
         if (SimpleBackupUtil.ZIP_FORMAT.equals(ModConfig.get().backupFormat)) {
@@ -105,10 +105,10 @@ public class SimpleBackupTask implements Runnable {
         Text relFolderPath = Text.literal(broadcastBackupPath);
         if (copied) {
             log.info("Successfully backed up world [{}] to [{}]", this.worldFolderName, broadcastBackupPath);
-            playerManager.broadcast(SUCCESS_BROADCAST.copyContentOnly().append(relFolderPath).setStyle(Style.EMPTY.withColor(8060843)), MessageType.SYSTEM);
+            SimpleBackupUtil.broadcastMessage(SUCCESS_BROADCAST.copyContentOnly().append(relFolderPath).setStyle(Style.EMPTY.withColor(8060843)), playerManager);
         } else {
             log.error("Server backup for world [{}] failed!  Check the logs for errors.", this.worldFolderName);
-            playerManager.broadcast(FAILED_BROADCAST1.copyContentOnly().append(relFolderPath).append(FAILED_BROADCAST2).setStyle(Style.EMPTY.withColor(16754871)), MessageType.SYSTEM);
+            SimpleBackupUtil.broadcastMessage(FAILED_BROADCAST1.copyContentOnly().append(relFolderPath).append(FAILED_BROADCAST2).setStyle(Style.EMPTY.withColor(16754871)), playerManager);
         }
     }
     

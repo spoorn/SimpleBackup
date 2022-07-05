@@ -1,13 +1,11 @@
 package org.spoorn.simplebackup;
 
 import lombok.extern.log4j.Log4j2;
-import net.minecraft.network.MessageType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.Util;
 import org.spoorn.simplebackup.config.ModConfig;
 import org.spoorn.simplebackup.util.ClientUtil;
 import org.spoorn.simplebackup.util.SimpleBackupUtil;
@@ -92,7 +90,7 @@ public class SimpleBackupTask implements Runnable {
         PlayerManager playerManager = this.server.getPlayerManager();
 
         String timeStr = dtf.format(LocalDateTime.now());
-        playerManager.broadcast(BROADCAST1, MessageType.SYSTEM, Util.NIL_UUID);
+        SimpleBackupUtil.broadcastMessage(BROADCAST1, playerManager);
 
         String broadcastBackupPath;
         if (SimpleBackupUtil.ZIP_FORMAT.equals(ModConfig.get().backupFormat)) {
@@ -107,10 +105,10 @@ public class SimpleBackupTask implements Runnable {
         Text relFolderPath = new LiteralText(broadcastBackupPath);
         if (copied) {
             log.info("Successfully backed up world [{}] to [{}]", this.worldFolderName, broadcastBackupPath);
-            playerManager.broadcast(SUCCESS_BROADCAST.copy().append(relFolderPath).setStyle(Style.EMPTY.withColor(8060843)), MessageType.SYSTEM, Util.NIL_UUID);
+            SimpleBackupUtil.broadcastMessage(SUCCESS_BROADCAST.copy().append(relFolderPath).setStyle(Style.EMPTY.withColor(8060843)), playerManager);
         } else {
             log.error("Server backup for world [{}] failed!  Check the logs for errors.", this.worldFolderName);
-            playerManager.broadcast(FAILED_BROADCAST1.copy().append(relFolderPath).append(FAILED_BROADCAST2).setStyle(Style.EMPTY.withColor(16754871)), MessageType.SYSTEM, Util.NIL_UUID);
+            SimpleBackupUtil.broadcastMessage(FAILED_BROADCAST1.copy().append(relFolderPath).append(FAILED_BROADCAST2).setStyle(Style.EMPTY.withColor(16754871)), playerManager);
         }
     }
     

@@ -52,7 +52,7 @@ public class ModConfig implements Config {
             "Note: If you are using backslashes '\\' instead of forward slash, you will need to escape it with double backslash '\\\\'.\n" +
             "Examples:\n" +
             "\t\"backupPath\": \"F:/mybackups/backup\",\n" +
-            "\t\"backupPath\": \"F:\\\\mybackups\\\\backup\"")
+            "\t\"backupPath\": \"F:\\\\mybackups\\\\backup\",")
     public String backupPath = "backup";
     
     @Comment("Maximum number of backups to keep at a given time.  [default = 10]\n" +
@@ -64,6 +64,9 @@ public class ModConfig implements Config {
     
     @Comment("Permission level to allow manual backups.  [4 = Ops] [0 = everyone] [default = 4]")
     public int permissionLevelForManualBackups = 4;
+    
+    @Comment("True to broadcast across the server when backups are triggered and finished.  False to disable. [default = true]")
+    public boolean broadcastBackupMessage = true;
     
     @Comment("Broadcast messages when server is backing up and success/failed.  These are in the config file to allow\n" +
             "servers to use whatever language they want without updating the mod source directly.  Default language is english")

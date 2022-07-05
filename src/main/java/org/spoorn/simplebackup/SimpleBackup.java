@@ -7,7 +7,6 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.message.MessageType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
@@ -26,7 +25,6 @@ import java.util.concurrent.atomic.AtomicReference;
 public class SimpleBackup implements ModInitializer {
     
     public static final String MODID = "simplebackup";
-    public static final String BACKUPS_FOLDER = "backup";
     private static final AtomicReference<SimpleBackupTask> manualBackupTask = new AtomicReference<>();
     public static AtomicReference<SimpleBackupTask> simpleBackupTask = new AtomicReference<>();
     
@@ -39,11 +37,9 @@ public class SimpleBackup implements ModInitializer {
         
         // Lang for backup broadcast messages
         SimpleBackupTask.init();
-
-        Path root = FabricLoader.getInstance().getGameDir();
-
+        
         // Create worlds backup folder
-        Path backupsPath = root.resolve(BACKUPS_FOLDER);
+        Path backupsPath = SimpleBackupUtil.getBackupPath();
         SimpleBackupUtil.createDirectoryFailSafe(backupsPath);
         log.info("Worlds backup folder: {}", backupsPath);
 
@@ -59,7 +55,7 @@ public class SimpleBackup implements ModInitializer {
 
                 int backupIntervals = ModConfig.get().backupIntervalInSeconds;
                 log.info("Scheduling a backup every {} seconds...", Math.max(10, backupIntervals));
-                simpleBackupTask.set(SimpleBackupTask.builder(root, worldFolderName, worldSavePath, server)
+                simpleBackupTask.set(SimpleBackupTask.builder(worldFolderName, worldSavePath, server)
                         .backupIntervalInSeconds(backupIntervals)
                         .build());
                 Thread backupThread = new Thread(simpleBackupTask.get());
@@ -104,7 +100,7 @@ public class SimpleBackup implements ModInitializer {
                 String worldFolderName = accessor.getSession().getDirectoryName();
                 Path worldSavePath = accessor.getSession().getDirectory(WorldSavePath.ROOT).getParent();
 
-                SimpleBackupTask serverStopBackup = SimpleBackupTask.builder(root, worldFolderName, worldSavePath, server)
+                SimpleBackupTask serverStopBackup = SimpleBackupTask.builder(worldFolderName, worldSavePath, server)
                                 .build();
                 serverStopBackup.backup();
 
@@ -172,7 +168,7 @@ public class SimpleBackup implements ModInitializer {
                                         String worldFolderName = accessor.getSession().getDirectoryName();
                                         Path worldSavePath = accessor.getSession().getDirectory(WorldSavePath.ROOT).getParent();
 
-                                        SimpleBackupTask serverStopBackup = SimpleBackupTask.builder(root, worldFolderName, worldSavePath, server)
+                                        SimpleBackupTask serverStopBackup = SimpleBackupTask.builder(worldFolderName, worldSavePath, server)
                                                 .build();
                                         manualBackupTask.set(serverStopBackup);
                                         new Thread(() -> {

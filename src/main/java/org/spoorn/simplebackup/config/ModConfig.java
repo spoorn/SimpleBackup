@@ -47,6 +47,14 @@ public class ModConfig implements Config {
             "This will prevent generating backups if your disk space is getting close to maxing out.")
     public int percentageAvailableDiskSpaceRequirement = 20;
     
+    @Comment("Backup folder.  If this is set to a relative path, it will be relative to the game directory [default = \"backup\"]\n" +
+            "This can be an absolute path as well if you want to store backups in a different location.\n" +
+            "Note: If you are using backslashes '\\' instead of forward slash, you will need to escape it with double backslash '\\\\'.\n" +
+            "Examples:\n" +
+            "\t\"backupPath\": \"F:/mybackups/backup\",\n" +
+            "\t\"backupPath\": \"F:\\\\mybackups\\\\backup\"")
+    public String backupPath = "backup";
+    
     @Comment("Maximum number of backups to keep at a given time.  [default = 10]\n" +
             "If we generate a backup, but have more backups than this number, the oldest backup will be deleted.")
     public int maxBackupsToKeep = 10;

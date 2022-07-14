@@ -5,8 +5,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.message.MessageType;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.text.Text;
-import org.spoorn.simplebackup.ZipCompressor;
-import net.minecraft.util.Util;
 import org.spoorn.simplebackup.compressors.LZ4Compressor;
 import org.spoorn.simplebackup.compressors.ZipCompressor;
 import org.spoorn.simplebackup.config.ModConfig;

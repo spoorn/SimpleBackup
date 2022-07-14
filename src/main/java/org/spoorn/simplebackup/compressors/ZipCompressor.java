@@ -1,4 +1,4 @@
-package org.spoorn.simplebackup;
+package org.spoorn.simplebackup.compressors;
 
 import lombok.extern.log4j.Log4j2;
 import net.lingala.zip4j.ZipFile;

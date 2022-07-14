@@ -6,7 +6,8 @@ import net.minecraft.network.MessageType;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
-import org.spoorn.simplebackup.ZipCompressor;
+import org.spoorn.simplebackup.compressors.LZ4Compressor;
+import org.spoorn.simplebackup.compressors.ZipCompressor;
 import org.spoorn.simplebackup.config.ModConfig;
 
 import java.io.File;
@@ -23,6 +24,7 @@ public class SimpleBackupUtil {
     
     public static final String ZIP_FORMAT = "ZIP";
     public static final String DIRECTORY_FORMAT = "DIRECTORY";
+    public static final String LZ4_FORMAT = "LZ4";
     public static final Set<String> FILES_TO_SKIP_COPY = Set.of(
             "session.lock"
     );
@@ -65,6 +67,14 @@ public class SimpleBackupUtil {
                 log.error("Backup at {} already exists!  Skipping...", destinationFile);
             }
             return ZipCompressor.zip(source.toString(), destination.toString());
+        } if (LZ4_FORMAT.equals(backupFormat)) {
+            Path destination = getBackupPath().resolve(timeStr);
+            String destinationFile = destination + LZ4Compressor.TAR_LZ4_EXTENSION;
+            log.info("Backing up world [{}] to {}", source, destinationFile);
+            if (Files.exists(Path.of(destinationFile))) {
+                log.error("Backup at {} already exists!  Skipping...", destinationFile);
+            }
+            return LZ4Compressor.compress(source.toString(), destination.toString());
         } else if (DIRECTORY_FORMAT.equals(backupFormat)) {
             Path destination = getBackupPath().resolve(Path.of(timeStr, worldFolderName));
             log.info("Backing up world [{}] to {}", source, destination);

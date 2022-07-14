@@ -125,6 +125,8 @@ public class SimpleBackup implements ModInitializer {
                         .executes(c -> this.triggerManualBackup(c, SimpleBackupUtil.ZIP_FORMAT)))
                     .then(literal("directory")
                         .executes(c -> this.triggerManualBackup(c, SimpleBackupUtil.DIRECTORY_FORMAT)))
+                    .then(literal("lz4")
+                        .executes(c -> this.triggerManualBackup(c, SimpleBackupUtil.LZ4_FORMAT)))
                     );
         });
     }

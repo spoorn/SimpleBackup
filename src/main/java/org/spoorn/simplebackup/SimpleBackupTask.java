@@ -6,6 +6,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import org.spoorn.simplebackup.compressors.LZ4Compressor;
+import org.spoorn.simplebackup.compressors.ZipCompressor;
 import org.spoorn.simplebackup.config.ModConfig;
 import org.spoorn.simplebackup.util.ClientUtil;
 import org.spoorn.simplebackup.util.SimpleBackupUtil;
@@ -100,7 +102,10 @@ public class SimpleBackupTask implements Runnable {
 
         String broadcastBackupPath;
         if (SimpleBackupUtil.ZIP_FORMAT.equals(this.backupFormat)) {
-            broadcastBackupPath = timeStr + ".zip";
+            broadcastBackupPath = timeStr + ZipCompressor.ZIP_EXTENSION;
+            this.lastBackupProcessed = SimpleBackupUtil.getBackupPath().resolve(broadcastBackupPath);
+        } else if (SimpleBackupUtil.LZ4_FORMAT.equals(this.backupFormat)) {
+            broadcastBackupPath = timeStr + LZ4Compressor.TAR_LZ4_EXTENSION;
             this.lastBackupProcessed = SimpleBackupUtil.getBackupPath().resolve(broadcastBackupPath);
         } else {
             broadcastBackupPath = timeStr + "/" + this.worldFolderName;

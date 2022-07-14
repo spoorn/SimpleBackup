@@ -41,7 +41,12 @@ public class ModConfig implements Config {
     public boolean enableServerStoppedBackup = true;
     
     @Comment("Backup format.  Supports simply backing up as a direct copy of the folder, or ZIP [default = \"ZIP\"]\n" +
-            "Supported formats: \"DIRECTORY\", \"ZIP\"")
+            "Supported formats: \"DIRECTORY\", \"ZIP\", \"LZ4\"\n" +
+            "\tDIRECTORY: copies the world folder as-is\n" +
+            "\tZIP: copies the world folder and zips it into a .zip file\n" +
+            "\tLZ4: archives the world folder into a .tar, then compresses using lz4, making a .tar.lz4 file\n" +
+            "LZ4 can be extracted/decompressed using 7-Zip-zstd: https://github.com/mcmilk/7-Zip-zstd\n" +
+            "See https://github.com/spoorn/SimpleBackup/blob/main/README.md for more information on the backup formats")
     public String backupFormat = "ZIP";
     
     @Comment("Percentage of disk space available required before creating a backup.  [default = 20]\n" +
@@ -75,7 +80,8 @@ public class ModConfig implements Config {
 
     public static void init() {
         CONFIG = OmegaConfig.register(ModConfig.class);
-        if (!SimpleBackupUtil.ZIP_FORMAT.equals(CONFIG.backupFormat) && !SimpleBackupUtil.DIRECTORY_FORMAT.equals(CONFIG.backupFormat)) {
+        if (!SimpleBackupUtil.ZIP_FORMAT.equals(CONFIG.backupFormat) && !SimpleBackupUtil.DIRECTORY_FORMAT.equals(CONFIG.backupFormat)
+            && !SimpleBackupUtil.LZ4_FORMAT.equals(CONFIG.backupFormat)) {
             throw new IllegalArgumentException("SimpleBackup config 'backupFormat' is invalid!");
         }
     }

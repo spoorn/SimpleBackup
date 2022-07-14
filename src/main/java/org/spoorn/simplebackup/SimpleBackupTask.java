@@ -31,14 +31,16 @@ public class SimpleBackupTask implements Runnable {
     private final Path worldSavePath;
     private final MinecraftServer server;
     private final long backupIntervalInMillis;
+    private final String backupFormat;
     
     private boolean terminated = false;
 
-    SimpleBackupTask(String worldFolderName, Path worldSavePath, MinecraftServer server, int backupIntervalInSeconds) {
+    SimpleBackupTask(String worldFolderName, Path worldSavePath, MinecraftServer server, int backupIntervalInSeconds, String backupFormat) {
         this.worldFolderName = worldFolderName;
         this.worldSavePath = worldSavePath;
         this.server = server;
         this.backupIntervalInMillis = backupIntervalInSeconds * 1000L;
+        this.backupFormat = backupFormat;
     }
     
     public static void init() {
@@ -52,6 +54,11 @@ public class SimpleBackupTask implements Runnable {
     public static SimpleBackupTaskBuilder builder(final String worldFolderName, final Path worldSavePath, 
                                                   final MinecraftServer server) {
         return new SimpleBackupTaskBuilder().worldFolderName(worldFolderName).worldSavePath(worldSavePath).server(server);
+    }
+
+    public static SimpleBackupTaskBuilder builder(final String worldFolderName, final Path worldSavePath,
+                                                  final MinecraftServer server, String backupFormat) {
+        return new SimpleBackupTaskBuilder().worldFolderName(worldFolderName).worldSavePath(worldSavePath).server(server).backupFormat(backupFormat);
     }
     
     public void terminate() {
@@ -92,14 +99,14 @@ public class SimpleBackupTask implements Runnable {
         SimpleBackupUtil.broadcastMessage(BROADCAST1, playerManager);
 
         String broadcastBackupPath;
-        if (SimpleBackupUtil.ZIP_FORMAT.equals(ModConfig.get().backupFormat)) {
+        if (SimpleBackupUtil.ZIP_FORMAT.equals(this.backupFormat)) {
             broadcastBackupPath = timeStr + ".zip";
             this.lastBackupProcessed = SimpleBackupUtil.getBackupPath().resolve(broadcastBackupPath);
         } else {
             broadcastBackupPath = timeStr + "/" + this.worldFolderName;
             this.lastBackupProcessed = SimpleBackupUtil.getBackupPath().resolve(timeStr);
         }
-        boolean copied = SimpleBackupUtil.backup(this.worldSavePath, this.worldFolderName, timeStr)
+        boolean copied = SimpleBackupUtil.backup(this.worldSavePath, this.worldFolderName, timeStr, this.backupFormat)
                 && SimpleBackupUtil.deleteStaleBackupFiles();
         Text relFolderPath = new LiteralText(broadcastBackupPath);
         if (copied) {
@@ -150,6 +157,7 @@ public class SimpleBackupTask implements Runnable {
         private Path worldSavePath;
         private MinecraftServer server;
         private int backupIntervalInSeconds = -1;
+        private String backupFormat = ModConfig.get().backupFormat;
 
         SimpleBackupTaskBuilder() {
         }
@@ -173,13 +181,20 @@ public class SimpleBackupTask implements Runnable {
             this.backupIntervalInSeconds = Math.max(10, backupIntervalInSeconds);
             return this;
         }
+        
+        public SimpleBackupTaskBuilder backupFormat(String backupFormat) {
+            this.backupFormat = backupFormat;
+            return this;
+        }
 
         public SimpleBackupTask build() {
-            return new SimpleBackupTask(worldFolderName, worldSavePath, server, backupIntervalInSeconds);
+            return new SimpleBackupTask(worldFolderName, worldSavePath, server, backupIntervalInSeconds, backupFormat);
         }
 
         public String toString() {
-            return "SimpleBackupTask.SimpleBackupTaskBuilder(worldFolderName=" + this.worldFolderName + ", worldSavePath=" + this.worldSavePath + ", server=" + this.server + ", backupIntervalInSeconds=" + this.backupIntervalInSeconds + ")";
+            return "SimpleBackupTask.SimpleBackupTaskBuilder(worldFolderName=" + this.worldFolderName + ", worldSavePath=" 
+                    + this.worldSavePath + ", server=" + this.server + ", backupIntervalInSeconds=" + this.backupIntervalInSeconds 
+                    + ", backupFormat=" + this.backupFormat + ")";
         }
     }
 }

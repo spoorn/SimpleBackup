@@ -35,6 +35,7 @@ public class ModConfig implements Config {
     public boolean onlyBackupIfPlayersOnline = true;
     
     @Comment("True to trigger a backup when server is stopped.  False to disable [default = true]\n" +
+            "If backup takes longer than max-tick-time set in server.properties, the server thread will wait until backup finishes.\n" +
             "Note: this may not properly finish the backup if you try to terminate the process with an interruption\n" +
             "\tsuch as CTRL+C!  Double check the backup file is the size you expect")
     public boolean enableServerStoppedBackup = true;

@@ -72,9 +72,7 @@ public class SimpleBackupTask implements Runnable {
         
         // Automatic backup loops
         while (!terminated) {
-            this.isProcessing = true;
             backup();
-            this.isProcessing = false;
             if (this.backupIntervalInMillis > 1000) {
                 waitToContinue(playerManager);
             } else {
@@ -87,6 +85,7 @@ public class SimpleBackupTask implements Runnable {
     }
     
     public void backup() {
+        this.isProcessing = true;
         PlayerManager playerManager = this.server.getPlayerManager();
 
         String timeStr = dtf.format(LocalDateTime.now());
@@ -110,6 +109,7 @@ public class SimpleBackupTask implements Runnable {
             log.error("Server backup for world [{}] failed!  Check the logs for errors.", this.worldFolderName);
             SimpleBackupUtil.broadcastMessage(FAILED_BROADCAST1.copyContentOnly().append(relFolderPath).append(FAILED_BROADCAST2).setStyle(Style.EMPTY.withColor(16754871)), playerManager);
         }
+        this.isProcessing = false;
     }
     
     // This doesn't account for spurious wakeups!

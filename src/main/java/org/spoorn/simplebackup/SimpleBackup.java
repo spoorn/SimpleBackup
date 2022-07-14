@@ -28,6 +28,7 @@ public class SimpleBackup implements ModInitializer {
     public static final String MODID = "simplebackup";
     private static final AtomicReference<SimpleBackupTask> manualBackupTask = new AtomicReference<>();
     public static AtomicReference<SimpleBackupTask> simpleBackupTask = new AtomicReference<>();
+    public static AtomicReference<SimpleBackupTask> serverEndBackupTask = new AtomicReference<>();
     
     @Override
     public void onInitialize() {
@@ -103,6 +104,7 @@ public class SimpleBackup implements ModInitializer {
 
                 SimpleBackupTask serverStopBackup = SimpleBackupTask.builder(worldFolderName, worldSavePath, server)
                                 .build();
+                serverEndBackupTask.set(serverStopBackup);
                 serverStopBackup.backup();
 
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> {

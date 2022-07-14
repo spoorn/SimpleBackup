@@ -1,6 +1,7 @@
 package org.spoorn.simplebackup;
 
 import static net.minecraft.server.command.CommandManager.literal;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.extern.log4j.Log4j2;
 import net.fabricmc.api.ModInitializer;
@@ -115,76 +116,78 @@ public class SimpleBackup implements ModInitializer {
         });
         
         // Commands
-        Map<String, String> broadcastMessages = ModConfig.get().broadcastMessages;
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(literal("simplebackup")
                     .then(literal("start")
-                        .executes(c -> {
-                            try {
-                                ServerCommandSource commandSource = c.getSource();
-                                // Check manual backups enabled
-                                if (!ModConfig.get().enableManualBackups) {
-                                    commandSource.sendFeedback(Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.disabled",
-                                            "Manual backups are disabled by the server!"))
-                                            .setStyle(Style.EMPTY.withColor(16433282)), true);
-                                    return 1;
-                                }
-                                
-                                boolean fromPlayer = true;
-                                try {
-                                    commandSource.getPlayerOrThrow();
-                                } catch (CommandSyntaxException e) {
-                                    fromPlayer = false;
-                                }
-                                
-                                // Check permissions
-                                if (fromPlayer && !commandSource.getPlayerOrThrow().hasPermissionLevel(ModConfig.get().permissionLevelForManualBackups)) {
-                                    commandSource.sendFeedback(Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.notallowed",
-                                            "You don't have permissions to trigger a manual backup!  Sorry :("))
-                                            .setStyle(Style.EMPTY.withColor(16433282)), true);
-                                    return 1;
-                                }
-                                
-                                // Try manual backup
-                                synchronized (manualBackupTask) {
-                                    if (manualBackupTask.get() != null) {
-                                        commandSource.sendFeedback(Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.alreadyexists",
-                                                "There is already an ongoing manual backup.  Please wait for it to finish before starting another!"))
-                                                .setStyle(Style.EMPTY.withColor(16433282)), true);
-                                    } else {
-                                        if (fromPlayer) {
-                                            commandSource.getServer().getPlayerManager().broadcast(
-                                                    c.getSource().getPlayerOrThrow().getDisplayName().copyContentOnly().append(
-                                                            Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.started",
-                                                                    " triggered a manual backup"))
-                                                                    .setStyle(Style.EMPTY.withColor(16433282))), MessageType.SYSTEM);
-                                        } else {
-                                            // Could not find a player, so broadcasting as a general message
-                                            commandSource.getServer().getPlayerManager().broadcast(Text.literal("Server" + 
-                                                    broadcastMessages.getOrDefault("simplebackup.manualbackup.started", " triggered a manual backup"))
-                                                    .setStyle(Style.EMPTY.withColor(16433282)), MessageType.SYSTEM);
-                                        }
-
-                                        MinecraftServer server = commandSource.getServer();
-                                        MinecraftServerAccessor accessor = (MinecraftServerAccessor) server;
-                                        String worldFolderName = accessor.getSession().getDirectoryName();
-                                        Path worldSavePath = accessor.getSession().getDirectory(WorldSavePath.ROOT).getParent();
-
-                                        SimpleBackupTask serverStopBackup = SimpleBackupTask.builder(worldFolderName, worldSavePath, server)
-                                                .build();
-                                        manualBackupTask.set(serverStopBackup);
-                                        new Thread(() -> {
-                                            serverStopBackup.run();
-                                            manualBackupTask.set(null);
-                                        }).start();
-                                    }
-                                }
-                                return 1;
-                            } catch (Exception e) {
-                                log.error("Could not create manual backup!", e);
-                                return 0;
-                            }
-                        })));
+                        .executes(c -> this.triggerManualBackup(c, ModConfig.get().backupFormat)))
+                    .then(literal("zip")
+                        .executes(c -> this.triggerManualBackup(c, SimpleBackupUtil.ZIP_FORMAT)))
+                    .then(literal("directory")
+                        .executes(c -> this.triggerManualBackup(c, SimpleBackupUtil.DIRECTORY_FORMAT)))
+                    );
         });
+    }
+    
+    private int triggerManualBackup(CommandContext<ServerCommandSource> c, String backupFormat) {
+        Map<String, String> broadcastMessages = ModConfig.get().broadcastMessages;
+        try {
+            ServerCommandSource commandSource = c.getSource();
+            // Check manual backups enabled
+            if (!ModConfig.get().enableManualBackups) {
+                commandSource.sendFeedback(Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.disabled",
+                        "Manual backups are disabled by the server!"))
+                        .setStyle(Style.EMPTY.withColor(16433282)), true);
+                return 1;
+            }
+
+            boolean fromPlayer = commandSource.getPlayer() != null;
+
+            // Check permissions
+            if (fromPlayer && !commandSource.getPlayer().hasPermissionLevel(ModConfig.get().permissionLevelForManualBackups)) {
+                commandSource.sendFeedback(Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.notallowed",
+                        "You don't have permissions to trigger a manual backup!  Sorry :("))
+                        .setStyle(Style.EMPTY.withColor(16433282)), true);
+                return 1;
+            }
+
+            // Try manual backup
+            synchronized (manualBackupTask) {
+                if (manualBackupTask.get() != null) {
+                    commandSource.sendFeedback(Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.alreadyexists",
+                            "There is already an ongoing manual backup.  Please wait for it to finish before starting another!"))
+                            .setStyle(Style.EMPTY.withColor(16433282)), true);
+                } else {
+                    if (fromPlayer) {
+                        commandSource.getServer().getPlayerManager().broadcast(
+                                c.getSource().getPlayer().getDisplayName().copy().append(
+                                        Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.started",
+                                                " triggered a manual backup"))
+                                                .setStyle(Style.EMPTY.withColor(16433282))), MessageType.SYSTEM);
+                    } else {
+                        // Could not find a player, so broadcasting as a general message
+                        commandSource.getServer().getPlayerManager().broadcast(Text.literal("Server" +
+                                broadcastMessages.getOrDefault("simplebackup.manualbackup.started", " triggered a manual backup"))
+                                .setStyle(Style.EMPTY.withColor(16433282)), MessageType.SYSTEM);
+                    }
+
+                    MinecraftServer server = commandSource.getServer();
+                    MinecraftServerAccessor accessor = (MinecraftServerAccessor) server;
+                    String worldFolderName = accessor.getSession().getDirectoryName();
+                    Path worldSavePath = accessor.getSession().getDirectory(WorldSavePath.ROOT).getParent();
+
+                    SimpleBackupTask serverStopBackup = SimpleBackupTask.builder(worldFolderName, worldSavePath, server, backupFormat)
+                            .build();
+                    manualBackupTask.set(serverStopBackup);
+                    new Thread(() -> {
+                        serverStopBackup.run();
+                        manualBackupTask.set(null);
+                    }).start();
+                }
+            }
+            return 1;
+        } catch (Exception e) {
+            log.error("Could not create manual backup!", e);
+            return 0;
+        }
     }
 }

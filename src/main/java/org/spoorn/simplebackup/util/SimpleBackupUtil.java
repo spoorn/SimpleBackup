@@ -51,12 +51,11 @@ public class SimpleBackupUtil {
         }
     }
     
-    public static boolean backup(Path source, String worldFolderName, String timeStr) {
+    public static boolean backup(Path source, String worldFolderName, String timeStr, String backupFormat) {
         if (!checkAvailableSpace(source)) {
             return false;
         }
         
-        String backupFormat = ModConfig.get().backupFormat;
         if (ZIP_FORMAT.equals(backupFormat)) {
             Path destination = getBackupPath().resolve(timeStr);
             String destinationFile = destination + ZipCompressor.ZIP_EXTENSION;

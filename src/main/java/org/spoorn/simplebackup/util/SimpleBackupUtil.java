@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Log4j2
 public class SimpleBackupUtil {
@@ -52,6 +53,12 @@ public class SimpleBackupUtil {
         if (ModConfig.get().broadcastBackupMessage) {
             playerManager.broadcast(message, MessageType.SYSTEM, Util.NIL_UUID);
         }
+    }
+
+    public static long fileCount(Path path) throws IOException {
+        return Files.walk(path)
+                .filter(p -> !p.toFile().isDirectory())
+                .count();
     }
     
     public static boolean backup(Path source, String worldFolderName, String timeStr, String backupFormat) {
@@ -166,6 +173,9 @@ public class SimpleBackupUtil {
     
     private static boolean copyDirectoriesFailSafe(Path source, Path destination) {
         try {
+            final long fileCount = fileCount(source);
+            final int interval = ModConfig.get().intervalPercentageToLogBackupProgress;
+            AtomicReference<Integer> atomicCount = new AtomicReference<>(0);
             Files.walkFileTree(source, new SimpleFileVisitor<>() {
 
                 @Override
@@ -181,6 +191,15 @@ public class SimpleBackupUtil {
                     Path dest = destination.resolve(source.relativize(file));
                     if (!FILES_TO_SKIP_COPY.contains(file.getFileName().toString()) && Files.notExists(dest)) {
                         Files.copy(file, dest, StandardCopyOption.COPY_ATTRIBUTES);
+
+                        int count = atomicCount.get();  // Not thread safe
+                        int prevPercent = (int) ((float) count / fileCount * 100);
+                        count++;
+                        int currPercent = (int) ((float) count / fileCount * 100);
+                        if (prevPercent / interval < currPercent / interval) {
+                            log.info("Backup progress: {}%", currPercent);
+                        }
+                        atomicCount.set(count);
                     }
                     return FileVisitResult.CONTINUE;
                 }

@@ -15,6 +15,8 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.util.Util;
 import net.minecraft.util.WorldSavePath;
+import org.spoorn.simplebackup.compressors.LZ4Compressor;
+import org.spoorn.simplebackup.compressors.ZipCompressor;
 import org.spoorn.simplebackup.config.ModConfig;
 import org.spoorn.simplebackup.mixin.MinecraftServerAccessor;
 import org.spoorn.simplebackup.util.SimpleBackupUtil;
@@ -40,6 +42,10 @@ public class SimpleBackup implements ModInitializer {
         
         // Lang for backup broadcast messages
         SimpleBackupTask.init();
+        
+        // Compressors init
+        LZ4Compressor.init();
+        ZipCompressor.init();
         
         // Create worlds backup folder
         Path backupsPath = SimpleBackupUtil.getBackupPath();

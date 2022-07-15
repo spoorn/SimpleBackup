@@ -74,6 +74,10 @@ public class ModConfig implements Config {
     @Comment("True to broadcast across the server when backups are triggered and finished.  False to disable. [default = true]")
     public boolean broadcastBackupMessage = true;
     
+    @Comment("Percentage (%) interval to log to server console the backup progress.  [default = 10]\n" +
+            "Set this to a value <= 0 or > 100 to not print anything.")
+    public int intervalPercentageToLogBackupProgress = 10;
+    
     @Comment("Broadcast messages when server is backing up and success/failed.  These are in the config file to allow\n" +
             "servers to use whatever language they want without updating the mod source directly.  Default language is english")
     public Map<String, String> broadcastMessages = new HashMap<>(DEFAULT_BROADCAST_MESSAGES);

@@ -191,6 +191,11 @@ public class LZ4Compressor {
         }
         
         public int getPercentDone() {
+            long denom = this.end - this.start;
+            if (denom <= 0) {
+                return 0;
+            }
+                
             return (int) ((this.pos - this.start) * 100 / (this.end - this.start));
         }
 

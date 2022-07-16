@@ -20,6 +20,10 @@
   //LZ4 can be extracted/decompressed using 7-Zip-zstd: https://github.com/mcmilk/7-Zip-zstd
   //See https://github.com/spoorn/SimpleBackup/blob/main/README.md for more information on the backup formats
   "backupFormat": "ZIP",
+  //Number of threads to execute backup.  Allows for parallel compression.  Only applies for LZ4 format currently!  [default = 1]
+  //Recommend only increasing this value if your world is very large and backups take a while.
+  //Recommend setting numThreads for multi-threaded processing to the number of cores in your CPU
+  "numThreads": 1,
   //Percentage of disk space available required before creating a backup.  [default = 20]
   //This will prevent generating backups if your disk space is getting close to maxing out.
   "percentageAvailableDiskSpaceRequirement": 20,
@@ -39,6 +43,9 @@
   "permissionLevelForManualBackups": 4,
   //True to broadcast across the server when backups are triggered and finished.  False to disable. [default = true]
   "broadcastBackupMessage": true,
+  //Percentage (%) interval to log to server console the backup progress.  [default = 10]
+  //Set this to a value <= 0 or > 100 to not print anything.
+  "intervalPercentageToLogBackupProgress": 10,
   //Broadcast messages when server is backing up and success/failed.  These are in the config file to allow
   //servers to use whatever language they want without updating the mod source directly.  Default language is english
   "broadcastMessages": {
@@ -47,8 +54,8 @@
     "simplebackup.backup.broadcast": "Starting server backup...",
     "simplebackup.backup.failed.broadcast2": ".  Please check the server logs for errors!",
     "simplebackup.manualbackup.disabled": "Manual backups are disabled by the server!",
-    "simplebackup.manualbackup.alreadyexists": "There is already an ongoing manual backup.  Please wait for it to finish before starting another!",
     "simplebackup.manualbackup.started": " triggered a manual backup",
+    "simplebackup.manualbackup.alreadyexists": "There is already an ongoing manual backup.  Please wait for it to finish before starting another!",
     "simplebackup.manualbackup.notallowed": "You don\u0027t have permissions to trigger a manual backup!  Sorry :("
   }
 }

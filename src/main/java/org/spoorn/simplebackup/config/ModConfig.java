@@ -49,6 +49,11 @@ public class ModConfig implements Config {
             "See https://github.com/spoorn/SimpleBackup/blob/main/README.md for more information on the backup formats")
     public String backupFormat = "ZIP";
     
+    @Comment("Number of threads to execute backup.  Allows for parallel compression.  Only applies for LZ4 format currently!  [default = 1]\n" +
+            "Recommend only increasing this value if your world is very large and backups take a while.\n" +
+            "Recommend setting numThreads for multi-threaded processing to the number of cores in your CPU")
+    public int numThreads = 1;
+    
     @Comment("Percentage of disk space available required before creating a backup.  [default = 20]\n" +
             "This will prevent generating backups if your disk space is getting close to maxing out.")
     public int percentageAvailableDiskSpaceRequirement = 20;

@@ -6,17 +6,22 @@ import net.minecraft.network.MessageType;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
+import org.apache.commons.io.filefilter.NotFileFilter;
+import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.spoorn.simplebackup.compressors.LZ4Compressor;
 import org.spoorn.simplebackup.compressors.ZipCompressor;
 import org.spoorn.simplebackup.config.ModConfig;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -29,6 +34,7 @@ public class SimpleBackupUtil {
     public static final Set<String> FILES_TO_SKIP_COPY = Set.of(
             "session.lock"
     );
+    private static final NotFileFilter EXCLUDE_FILES = new NotFileFilter(new SuffixFileFilter(".tmp"));
     
     public static void createDirectoryFailSafe(Path path) {
         try {
@@ -117,7 +123,7 @@ public class SimpleBackupUtil {
     }
     
     public static boolean deleteStaleBackupFiles() {
-        File[] backupFiles = getBackupPath().toFile().listFiles();
+        File[] backupFiles = getBackupPath().toFile().listFiles((FilenameFilter) EXCLUDE_FILES);
         if (backupFiles != null) {
             int numBackupFiles = backupFiles.length;
             AtomicBoolean errorWhileSorting = new AtomicBoolean(false);

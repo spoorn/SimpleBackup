@@ -51,8 +51,12 @@ public class ModConfig implements Config {
     
     @Comment("Number of threads to execute backup.  Allows for parallel compression.  Only applies for LZ4 format currently!  [default = 1]\n" +
             "Recommend only increasing this value if your world is very large and backups take a while.\n" +
-            "Recommend setting numThreads for multi-threaded processing to the number of cores in your CPU")
+            "Recommend setting numThreads for multi-threaded processing to the number of cores in your CPU, or a multiple of that number.\n" +
+            "This is capped to number of processors * 4 for your safety!")
     public int numThreads = 1;
+    
+    @Comment("Buffer size in bytes for multi-threading (when numThreads > 1) used for compressing and merging files [default = 8192]")
+    public int multiThreadBufferSize = 8192;
     
     @Comment("Percentage of disk space available required before creating a backup.  [default = 20]\n" +
             "This will prevent generating backups if your disk space is getting close to maxing out.")
@@ -93,6 +97,7 @@ public class ModConfig implements Config {
             && !SimpleBackupUtil.LZ4_FORMAT.equals(CONFIG.backupFormat)) {
             throw new IllegalArgumentException("SimpleBackup config 'backupFormat' is invalid!");
         }
+        CONFIG.numThreads = Math.min(Runtime.getRuntime().availableProcessors() * 4, CONFIG.numThreads);
     }
 
     public static ModConfig get() {

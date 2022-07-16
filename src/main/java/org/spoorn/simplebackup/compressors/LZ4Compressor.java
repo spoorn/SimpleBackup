@@ -10,10 +10,12 @@ import org.spoorn.simplebackup.config.ModConfig;
 import org.spoorn.simplebackup.io.CustomTarArchiveOutputStream;
 import org.spoorn.simplebackup.util.SimpleBackupUtil;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 @Log4j2
@@ -33,17 +35,20 @@ public class LZ4Compressor {
             long fileCount = SimpleBackupUtil.fileCount(Path.of(targetPath));
             
             log.info("Backing up {} files using LZ4 compression", fileCount);
-            int numThreads = ModConfig.get().numThreads;
+            int numThreads = Math.max(ModConfig.get().numThreads, 1);
+            long[] fileCountIntervals = SimpleBackupUtil.getFileCountIntervalsFromSize(Path.of(targetPath), numThreads);
 
             try (FileOutputStream outputFile = new FileOutputStream(destinationPath + TAR_LZ4_EXTENSION)) {
                 if (numThreads < 2) {
-                    new RunTarLZ4(targetPath, destinationPath, fileCount, 0, 1, outputFile).run();
+                    new RunTarLZ4(targetPath, destinationPath, fileCount, 0, fileCount, 0, 1, outputFile).run();
                 } else {
                     var futures = new Future[numThreads];
                     RunTarLZ4[] runnables = new RunTarLZ4[numThreads];
 
                     for (int i = 0; i < numThreads; i++) {
-                        RunTarLZ4 runnable = new RunTarLZ4(targetPath, destinationPath, fileCount, i, numThreads, new FileOutputStream(destinationPath + "_" + i + TMP_SUFFIX));
+                        RunTarLZ4 runnable = new RunTarLZ4(targetPath, destinationPath, fileCount, fileCountIntervals[i], 
+                                i == numThreads - 1 ? fileCount : fileCountIntervals[i + 1], i, numThreads, 
+                                new FileOutputStream(destinationPath + "_" + i + TMP_SUFFIX));
                         futures[i] = SimpleBackup.EXECUTOR_SERVICE.submit(runnable);
                         runnables[i] = runnable;
                     }
@@ -96,19 +101,19 @@ public class LZ4Compressor {
     
     private static class RunTarLZ4 implements Runnable {
         
-        private String targetPath;
-        private String destinationPath;
-        private long fileCount;
-        private int slice;
-        private int totalSlices;
+        private final String targetPath;
+        private final String destinationPath;
+        private final long fileCount;
+        private final int slice;
+        private final int totalSlices;
         final FileOutputStream fos;
         
         private long pos;
-        private long start;    // inclusive
-        private long end;   // inclusive
+        private final long start;    // inclusive
+        private final long end;   // exclusive
         private int count;
 
-        public RunTarLZ4(String targetPath, String destinationPath, long fileCount, int slice, int totalSlices, FileOutputStream fos) {
+        public RunTarLZ4(String targetPath, String destinationPath, long fileCount, long start, long end, int slice, int totalSlices, FileOutputStream fos) {
             this.targetPath = targetPath;
             this.destinationPath = destinationPath;
             this.fileCount = fileCount;
@@ -126,20 +131,14 @@ public class LZ4Compressor {
              * 750 -> 999
              */
 
-            long sliceLength = fileCount / totalSlices;
-            this.start = sliceLength * slice;
-            
-            if (slice == totalSlices - 1) {
-                this.end = fileCount - 1;  // for odd cases
-            } else {
-                this.end = sliceLength * (slice + 1) - 1;
-            }
+            this.start = start;
+            this.end = end;
             this.pos = this.start;
             this.count = 0;
         }
         
         public int getPercentDone() {
-            return (int) ((this.pos - this.start) * 100 / (this.end - this.start + 1));
+            return (int) ((this.pos - this.start) * 100 / (this.end - this.start));
         }
 
         @Override
@@ -150,7 +149,7 @@ public class LZ4Compressor {
                 if (this.totalSlices == 1) {
                     addFilesToTar(targetPath, "", taos);
                 } else {
-                    log.info("Starting backup for slice {} with start={}, end={}", this.slice, this.start, this.end);
+                    log.info("Starting backup for slice {} with start={}, end={}", this.slice, this.start, this.end - 1);
                     addFilesToTar(targetPath, "", taos);
                     log.info("Finished slice {}", this.slice);
                 }
@@ -170,7 +169,7 @@ public class LZ4Compressor {
                 
                 // If we are out of bounds, skip
                 // TODO: optimize
-                if (file.isFile() && (count < this.start || count > this.end)) {
+                if (file.isFile() && (count < this.start || count >= this.end)) {
                     count++;
                     return;
                 }

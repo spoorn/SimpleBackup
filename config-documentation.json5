@@ -20,6 +20,10 @@
   //LZ4 can be extracted/decompressed using 7-Zip-zstd: https://github.com/mcmilk/7-Zip-zstd
   //See https://github.com/spoorn/SimpleBackup/blob/main/README.md for more information on the backup formats
   "backupFormat": "ZIP",
+  //Number of threads to execute backup.  Allows for parallel compression.  Only applies for LZ4 format currently!  [default = 1]
+  //Recommend only increasing this value if your world is very large and backups take a while.
+  //Recommend setting numThreads for multi-threaded processing to the number of cores in your CPU
+  "numThreads": 1,
   //Percentage of disk space available required before creating a backup.  [default = 20]
   //This will prevent generating backups if your disk space is getting close to maxing out.
   "percentageAvailableDiskSpaceRequirement": 20,

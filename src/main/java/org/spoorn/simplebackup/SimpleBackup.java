@@ -1,6 +1,7 @@
 package org.spoorn.simplebackup;
 
 import static net.minecraft.server.command.CommandManager.literal;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.extern.log4j.Log4j2;
@@ -22,6 +23,8 @@ import org.spoorn.simplebackup.util.SimpleBackupUtil;
 
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Log4j2
@@ -31,13 +34,16 @@ public class SimpleBackup implements ModInitializer {
     private static final AtomicReference<SimpleBackupTask> manualBackupTask = new AtomicReference<>();
     public static AtomicReference<SimpleBackupTask> simpleBackupTask = new AtomicReference<>();
     public static AtomicReference<SimpleBackupTask> serverEndBackupTask = new AtomicReference<>();
-    
+    public static ExecutorService EXECUTOR_SERVICE;
+
     @Override
     public void onInitialize() {
         log.info("Hello from SimpleBackup!");
         
         // Config
         ModConfig.init();
+        
+        EXECUTOR_SERVICE = Executors.newFixedThreadPool(ModConfig.get().numThreads, new ThreadFactoryBuilder().setNameFormat("SimpleBackup-%d").build());
         
         // Lang for backup broadcast messages
         SimpleBackupTask.init();

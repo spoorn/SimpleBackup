@@ -1,3 +1,5 @@
+_This document is also cloned as a gist in case anyone wants to comment: https://gist.github.com/spoorn/e20ad021aaeca96835ea8d66c0e3923d_
+
 # Overview
 Below, I'll summarize some of the technical aspects of this mod as I've learned a bit of tricks along the way which may be useful for anyone reading.
 

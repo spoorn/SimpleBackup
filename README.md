@@ -1,6 +1,8 @@
 # Description
 Simple Backup utility for servers.  Automatic backups at intervals, with configurable options such as compression to zip file, pausing auto backups if no players are online, etc.
 
+For a technical deep dive on how this was implemented, see https://github.com/spoorn/SimpleBackup/blob/main/SUMMARY.md
+
 # Features
 - Automatic backups at configurable intervals
 - Pausing backups if no players are online to save resources

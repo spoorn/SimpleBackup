@@ -143,7 +143,7 @@ public class SimpleBackupUtil {
             if (Files.exists(Path.of(destinationFile))) {
                 log.error("Backup at {} already exists!  Skipping...", destinationFile);
             }
-            return LZ4Compressor.compress(source.toString(), destination.toString());
+            return LZ4Compressor.compress(source.toString(), destination.getParent().toString(), timeStr);
         } else if (DIRECTORY_FORMAT.equals(backupFormat)) {
             Path destination = getBackupPath().resolve(Path.of(timeStr, worldFolderName));
             log.info("Backing up world [{}] to {}", source, destination);

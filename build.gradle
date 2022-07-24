@@ -52,6 +52,9 @@ dependencies {
     include("org.apache.commons:commons-compress:${project.commons_compress_version}")
     implementation("org.apache.commons:commons-compress:${project.commons_compress_version}")
 
+    include("com.github.spoorn:tar-lz4-java:${project.tarlz4java_version}")
+    implementation("com.github.spoorn:tar-lz4-java:${project.tarlz4java_version}")
+
     // Brigadier for commands
     implementation "com.mojang:brigadier:${project.brigadier_version}"
 }

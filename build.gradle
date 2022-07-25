@@ -45,12 +45,6 @@ dependencies {
     
     include("net.lingala.zip4j:zip4j:${project.zip4j_version}")
     implementation("net.lingala.zip4j:zip4j:${project.zip4j_version}")
-    
-    include("org.lz4:lz4-java:${project.lz4_version}")
-    implementation("org.lz4:lz4-java:${project.lz4_version}")
-
-    include("org.apache.commons:commons-compress:${project.commons_compress_version}")
-    implementation("org.apache.commons:commons-compress:${project.commons_compress_version}")
 
     include("com.github.spoorn:tar-lz4-java:${project.tarlz4java_version}")
     implementation("com.github.spoorn:tar-lz4-java:${project.tarlz4java_version}")

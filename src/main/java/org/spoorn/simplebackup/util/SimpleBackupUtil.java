@@ -2,7 +2,6 @@ package org.spoorn.simplebackup.util;
 
 import lombok.extern.log4j.Log4j2;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.network.message.MessageType;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.text.Text;
 import org.apache.commons.io.filefilter.NotFileFilter;
@@ -55,7 +54,7 @@ public class SimpleBackupUtil {
     
     public static void broadcastMessage(Text message, PlayerManager playerManager) {
         if (ModConfig.get().broadcastBackupMessage) {
-            playerManager.broadcast(message, MessageType.SYSTEM);
+            playerManager.broadcast(message, false);
         }
     }
 

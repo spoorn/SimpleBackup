@@ -3,13 +3,11 @@ package org.spoorn.simplebackup;
 import static net.minecraft.server.command.CommandManager.literal;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import lombok.extern.log4j.Log4j2;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.network.message.MessageType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Style;
@@ -176,12 +174,12 @@ public class SimpleBackup implements ModInitializer {
                                 c.getSource().getPlayer().getDisplayName().copy().append(
                                         Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.started",
                                                 " triggered a manual backup"))
-                                                .setStyle(Style.EMPTY.withColor(16433282))), MessageType.SYSTEM);
+                                                .setStyle(Style.EMPTY.withColor(16433282))), false);
                     } else {
                         // Could not find a player, so broadcasting as a general message
                         commandSource.getServer().getPlayerManager().broadcast(Text.literal("Server" +
                                 broadcastMessages.getOrDefault("simplebackup.manualbackup.started", " triggered a manual backup"))
-                                .setStyle(Style.EMPTY.withColor(16433282)), MessageType.SYSTEM);
+                                .setStyle(Style.EMPTY.withColor(16433282)), false);
                     }
 
                     MinecraftServer server = commandSource.getServer();

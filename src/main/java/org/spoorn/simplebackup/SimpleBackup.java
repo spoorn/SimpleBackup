@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
+import static net.minecraft.server.command.CommandManager.*;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.WorldSavePath;
@@ -37,7 +38,7 @@ public class SimpleBackup implements ModInitializer {
     @Override
     public void onInitialize() {
         log.info("Hello from SimpleBackup!");
-        
+
         // Config
         ModConfig.init();
         
@@ -146,7 +147,7 @@ public class SimpleBackup implements ModInitializer {
             ServerCommandSource commandSource = c.getSource();
             // Check manual backups enabled
             if (!ModConfig.get().enableManualBackups) {
-                commandSource.sendFeedback(Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.disabled",
+                commandSource.sendFeedback(() -> Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.disabled",
                         "Manual backups are disabled by the server!"))
                         .setStyle(Style.EMPTY.withColor(16433282)), true);
                 return 1;
@@ -156,7 +157,7 @@ public class SimpleBackup implements ModInitializer {
 
             // Check permissions
             if (fromPlayer && !commandSource.getPlayer().hasPermissionLevel(ModConfig.get().permissionLevelForManualBackups)) {
-                commandSource.sendFeedback(Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.notallowed",
+                commandSource.sendFeedback(() -> Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.notallowed",
                         "You don't have permissions to trigger a manual backup!  Sorry :("))
                         .setStyle(Style.EMPTY.withColor(16433282)), true);
                 return 1;
@@ -165,7 +166,7 @@ public class SimpleBackup implements ModInitializer {
             // Try manual backup
             synchronized (manualBackupTask) {
                 if (manualBackupTask.get() != null) {
-                    commandSource.sendFeedback(Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.alreadyexists",
+                    commandSource.sendFeedback(() -> Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.alreadyexists",
                             "There is already an ongoing manual backup.  Please wait for it to finish before starting another!"))
                             .setStyle(Style.EMPTY.withColor(16433282)), true);
                 } else {

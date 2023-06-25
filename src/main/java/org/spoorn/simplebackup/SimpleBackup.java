@@ -10,7 +10,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import static net.minecraft.server.command.CommandManager.*;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.WorldSavePath;

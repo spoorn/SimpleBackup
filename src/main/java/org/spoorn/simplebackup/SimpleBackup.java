@@ -32,7 +32,7 @@ public class SimpleBackup implements ModInitializer {
     private static final AtomicReference<SimpleBackupTask> manualBackupTask = new AtomicReference<>();
     public static AtomicReference<SimpleBackupTask> simpleBackupTask = new AtomicReference<>();
     public static AtomicReference<SimpleBackupTask> serverEndBackupTask = new AtomicReference<>();
-    public static ExecutorService EXECUTOR_SERVICE;
+    //public static ExecutorService EXECUTOR_SERVICE;
 
     @Override
     public void onInitialize() {
@@ -41,7 +41,7 @@ public class SimpleBackup implements ModInitializer {
         // Config
         ModConfig.init();
         
-        EXECUTOR_SERVICE = Executors.newFixedThreadPool(ModConfig.get().numThreads, new ThreadFactoryBuilder().setNameFormat("SimpleBackup-%d").build());
+        //EXECUTOR_SERVICE = Executors.newFixedThreadPool(ModConfig.get().numThreads, new ThreadFactoryBuilder().setNameFormat("SimpleBackup-%d").build());
         
         // Lang for backup broadcast messages
         SimpleBackupTask.init();
@@ -146,7 +146,7 @@ public class SimpleBackup implements ModInitializer {
             ServerCommandSource commandSource = c.getSource();
             // Check manual backups enabled
             if (!ModConfig.get().enableManualBackups) {
-                commandSource.sendFeedback(Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.disabled",
+                commandSource.sendFeedback(() -> Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.disabled",
                         "Manual backups are disabled by the server!"))
                         .setStyle(Style.EMPTY.withColor(16433282)), true);
                 return 1;
@@ -156,7 +156,7 @@ public class SimpleBackup implements ModInitializer {
 
             // Check permissions
             if (fromPlayer && !commandSource.getPlayer().hasPermissionLevel(ModConfig.get().permissionLevelForManualBackups)) {
-                commandSource.sendFeedback(Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.notallowed",
+                commandSource.sendFeedback(() -> Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.notallowed",
                         "You don't have permissions to trigger a manual backup!  Sorry :("))
                         .setStyle(Style.EMPTY.withColor(16433282)), true);
                 return 1;
@@ -165,7 +165,7 @@ public class SimpleBackup implements ModInitializer {
             // Try manual backup
             synchronized (manualBackupTask) {
                 if (manualBackupTask.get() != null) {
-                    commandSource.sendFeedback(Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.alreadyexists",
+                    commandSource.sendFeedback(() -> Text.literal(broadcastMessages.getOrDefault("simplebackup.manualbackup.alreadyexists",
                             "There is already an ongoing manual backup.  Please wait for it to finish before starting another!"))
                             .setStyle(Style.EMPTY.withColor(16433282)), true);
                 } else {
